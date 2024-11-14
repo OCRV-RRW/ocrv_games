@@ -3,7 +3,7 @@ services:
     image: postgres:15-alpine
     container_name: game-postgres
     env_file:
-      - app.env
+      - .env
     ports:
       - ${POSTGRES_PORT}:5432
     healthcheck:
