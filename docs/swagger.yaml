@@ -1,5 +1,15 @@
 basePath: /
 definitions:
+  models.SignInInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
   models.SignUpInput:
     properties:
       email:
@@ -10,6 +20,11 @@ definitions:
         type: string
       password_confirm:
         type: string
+    required:
+    - email
+    - name
+    - password
+    - password_confirm
     type: object
 host: localhost:8080
 info:
@@ -24,20 +39,52 @@ info:
   title: Fiber Example API
   version: "1.0"
 paths:
-  /register/:
+  /api/v1/auth/login:
     post:
       consumes:
       - application/json
-      description: get admin info
+      description: sign in user
+      parameters:
+      - description: SignInInput
+        in: body
+        name: SignInInput
+        required: true
+        schema:
+          $ref: '#/definitions/models.SignInInput'
       produces:
       - application/json
       responses:
         "200":
           description: OK
-          schema:
-            $ref: '#/definitions/models.SignUpInput'
-      summary: Auth admin
-      tags:
-      - accounts
-      - admin
+        "400":
+          description: Bad Request
+  /api/v1/auth/logout:
+    get:
+      consumes:
+      - application/json
+      description: logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+  /api/v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: sign up user
+      parameters:
+      - description: SignUpInput
+        in: body
+        name: SignUpInput
+        required: true
+        schema:
+          $ref: '#/definitions/models.SignUpInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
 swagger: "2.0"

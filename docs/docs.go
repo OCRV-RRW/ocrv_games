@@ -23,34 +23,107 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/register/": {
+        "/api/v1/auth/login": {
             "post": {
-                "description": "get admin info",
+                "description": "sign in user",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "tags": [
-                    "accounts",
-                    "admin"
+                "parameters": [
+                    {
+                        "description": "SignInInput",
+                        "name": "SignInInput",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SignInInput"
+                        }
+                    }
                 ],
-                "summary": "Auth admin",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/logout": {
+            "get": {
+                "description": "logout",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/register": {
+            "post": {
+                "description": "sign up user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "description": "SignUpInput",
+                        "name": "SignUpInput",
+                        "in": "body",
+                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/models.SignUpInput"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
                     }
                 }
             }
         }
     },
     "definitions": {
+        "models.SignInInput": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
         "models.SignUpInput": {
             "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password",
+                "password_confirm"
+            ],
             "properties": {
                 "email": {
                     "type": "string"

@@ -22,7 +22,7 @@ import (
 // @Param        SignUpInput		body		models.SignUpInput		true   "SignUpInput"
 // @Success		 200
 // @Failure      400
-// @Router		 api/v1/auth/register/ [post]
+// @Router		 /api/v1/auth/register [post]
 func SignUpUser(c *fiber.Ctx) error {
 	var payload *models.SignUpInput
 
@@ -89,7 +89,7 @@ func SignUpUser(c *fiber.Ctx) error {
 // @Produce		json
 // @Success		200
 // @Failure     400
-// @Router	    api/v1/auth/login/ [post]
+// @Router	    /api/v1/auth/login [post]
 func SignInUser(c *fiber.Ctx) error {
 	var payload *models.SignInInput
 
@@ -166,7 +166,7 @@ func SignInUser(c *fiber.Ctx) error {
 // @Accept		json
 // @Produce		json
 // @Success	    200
-// @Router		api/v1/auth/logout/ [get]
+// @Router		/api/v1/auth/logout [get]
 func LogoutUser(c *fiber.Ctx) error {
 	expired := time.Now().Add(-time.Hour * 24)
 	c.Cookie(&fiber.Cookie{
