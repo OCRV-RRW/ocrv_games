@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"time"
@@ -17,15 +16,15 @@ type User struct {
 }
 
 type SignUpInput struct {
-	Name            string `json:"name"`
-	Email           string `json:"email"`
-	Password        string `json:"password"`
-	PasswordConfirm string `json:"password_confirm"`
+	Name            string `json:"name" validate:"required"`
+	Email           string `json:"email" validate:"required,email"`
+	Password        string `json:"password" validate:"required"`
+	PasswordConfirm string `json:"password_confirm" validate:"required"`
 }
 
 type SignInInput struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
 }
 
 type UserResponse struct {
@@ -42,27 +41,4 @@ func FilterUserRecord(user *User) UserResponse {
 		Email:     user.Email,
 		CreatedAt: *user.CreatedAt,
 	}
-}
-
-var validate = validator.New()
-
-type ErrorResponse struct {
-	Field string `json:"field"`
-	Tag   string `json:"tag"`
-	Value string `json:"value"`
-}
-
-func ValidateStruct[T any](payload T) []*ErrorResponse {
-	var errors []*ErrorResponse
-	err := validate.Struct(payload)
-	if err != nil {
-		for _, err := range err.(validator.ValidationErrors) {
-			var element ErrorResponse
-			element.Field = err.StructNamespace()
-			element.Tag = err.Tag()
-			element.Value = err.Param()
-			errors = append(errors, &element)
-		}
-	}
-	return errors
 }
