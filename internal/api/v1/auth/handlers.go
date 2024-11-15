@@ -4,6 +4,8 @@ import (
 	"Games/internal/config"
 	"Games/internal/database"
 	"Games/internal/models"
+	"Games/internal/validation"
+	"Games/internal/validation/error_code"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -14,13 +16,13 @@ import (
 
 // SignUpUser godoc
 //
-//	@Summary		Auth admin
-//	@Description	get admin info
-//	@Tags			accounts,admin
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	models.SignUpInput
-//	@Router			/register/ [post]
+// @Description	 sign up user
+// @Accept		 json
+// @Produce		 json
+// @Param        SignUpInput		body		models.SignUpInput		true   "SignUpInput"
+// @Success		 200
+// @Failure      400
+// @Router		 api/v1/auth/register/ [post]
 func SignUpUser(c *fiber.Ctx) error {
 	var payload *models.SignUpInput
 
@@ -28,19 +30,29 @@ func SignUpUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
 	}
 
-	errors := models.ValidateStruct(payload)
+	errors := validation.ValidateStruct(payload)
 	if errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "errors": errors})
+		return c.Status(fiber.StatusBadRequest).JSON(validation.ApiError{errors})
 	}
 
 	if payload.Password != payload.PasswordConfirm {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Passwords do not match"})
+		passwordError := []*validation.ErrorResponse{
+			{
+				Code:    error_code.PASSWORD_DO_NOT_MATCH,
+				Message: "Passwords do not match",
+			}}
+		return c.Status(fiber.StatusBadRequest).JSON(validation.ApiError{passwordError})
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
 
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(validation.ApiError{
+			[]*validation.ErrorResponse{
+				{
+					Code:    error_code.ERROR,
+					Message: err.Error(),
+				}}})
 	}
 
 	newUser := models.User{
@@ -51,36 +63,67 @@ func SignUpUser(c *fiber.Ctx) error {
 	result := database.DB.Create(&newUser)
 
 	if result.Error != nil && strings.Contains(result.Error.Error(), "duplicate key value violates unique") {
-		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"status": "fail", "message": "User with that email already exists"})
+		return c.Status(fiber.StatusConflict).JSON(validation.ApiError{
+			[]*validation.ErrorResponse{
+				{
+					Code:    error_code.USER_ALREADY_EXIST,
+					Message: "User with that email already exists",
+				}}})
 	} else if result.Error != nil {
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "error", "message": "Something bad happened"})
+		return c.Status(fiber.StatusBadGateway).JSON(validation.ApiError{
+			[]*validation.ErrorResponse{
+				{
+					Code:    error_code.ERROR,
+					Message: "Something bad happened",
+				}}})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success", "data": fiber.Map{"user": models.FilterUserRecord(&newUser)}})
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"data": fiber.Map{"user": models.FilterUserRecord(&newUser)}})
 }
 
+// SignInUser godoc
+//
+// @Description	sign in user
+// @Accept      json
+// @Param       SignInInput		body		models.SignInInput		true   "SignInInput"
+// @Produce		json
+// @Success		200
+// @Failure     400
+// @Router	    api/v1/auth/login/ [post]
 func SignInUser(c *fiber.Ctx) error {
 	var payload *models.SignInInput
 
 	if err := c.BodyParser(&payload); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(validation.ApiError{
+			[]*validation.ErrorResponse{
+				{
+					Code:    error_code.PARSE_ERROR,
+					Message: err.Error(),
+				}}})
 	}
 
-	errors := models.ValidateStruct(payload)
+	errors := validation.ValidateStruct(payload)
 	if errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(errors)
-
+		return c.Status(fiber.StatusBadRequest).JSON(validation.ApiError{errors})
 	}
 
 	var user models.User
 	result := database.DB.First(&user, "email = ?", strings.ToLower(payload.Email))
+
+	loginError := []*validation.ErrorResponse{
+		{
+			Code:    error_code.INVALID_LOGIN_DATA,
+			Message: "Invalid email or Password",
+		},
+	}
+
 	if result.Error != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Invalid email or Password"})
+		return c.Status(fiber.StatusBadRequest).JSON(validation.ApiError{loginError})
 	}
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Invalid email or Password"})
+		return c.Status(fiber.StatusBadRequest).JSON(validation.ApiError{loginError})
 	}
 
 	config, _ := config.LoadConfig(".")
@@ -97,7 +140,11 @@ func SignInUser(c *fiber.Ctx) error {
 	tokenString, err := tokenByte.SignedString([]byte(config.JwtSecret))
 
 	if err != nil {
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": fmt.Sprintf("generating JWT Token failed: %v", err)})
+		return c.Status(fiber.StatusBadGateway).JSON(validation.ApiError{
+			[]*validation.ErrorResponse{{
+				Code:    error_code.ERROR,
+				Message: fmt.Sprintf("generating JWT Token failed: %v", err),
+			}}})
 	}
 
 	c.Cookie(&fiber.Cookie{
@@ -110,9 +157,16 @@ func SignInUser(c *fiber.Ctx) error {
 		Domain:   "localhost",
 	})
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "token": tokenString})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"token": tokenString})
 }
 
+// LogoutUser godoc
+//
+// @Description	logout
+// @Accept		json
+// @Produce		json
+// @Success	    200
+// @Router		api/v1/auth/logout/ [get]
 func LogoutUser(c *fiber.Ctx) error {
 	expired := time.Now().Add(-time.Hour * 24)
 	c.Cookie(&fiber.Cookie{
@@ -120,5 +174,6 @@ func LogoutUser(c *fiber.Ctx) error {
 		Value:   "",
 		Expires: expired,
 	})
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
+	c.Status(fiber.StatusOK)
+	return nil
 }

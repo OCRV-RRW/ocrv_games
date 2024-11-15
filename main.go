@@ -2,8 +2,10 @@ package main
 
 import (
 	"Games/internal/api/v1/auth"
+	"Games/internal/api/v1/user"
 	"Games/internal/config"
 	"Games/internal/database"
+	"Games/internal/middleware"
 	"fmt"
 	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
@@ -40,32 +42,19 @@ func main() {
 
 	app.Use(swagger.New(cfg))
 
-	//app.Get("/swagger/*", swagger.New(swagger.Config{ // custom
-	//	URL:         "http://example.com/doc.json",
-	//	DeepLinking: false,
-	//	// Expand ("list") or Collapse ("none") tag groups by default
-	//	DocExpansion: "none",
-	//	// Prefill OAuth ClientId on Authorize popup
-	//	OAuth: &swagger.OAuthConfig{
-	//		AppName:  "OAuth Provider",
-	//		ClientId: "21bb4edc-05a7-4afc-86f1-2e151e4ba6e2",
-	//	},
-	//	// Ability to change OAuth2 redirect uri location
-	//	OAuth2RedirectUrl: "http://localhost:8080/swagger/oauth2-redirect.html",
-	//}))
-
-	app.Mount("/api", micro)
+	app.Mount("/api/v1", micro)
 	app.Use(logger.New())
+
 	//app.Use(cors.New(cors.Config{
-	//	AllowOrigins:     "http://localhost:3000",
-	//	AllowHeaders:     "Origin, Content-Type, Accept",
-	//	AllowMethods:     "GET, POST",
+	//	AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin",
+	//	AllowOrigins:     "*",
 	//	AllowCredentials: true,
+	//	AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
 	//}))
 
 	micro.Route("/auth", auth.AddRoutes)
 
-	//micro.Get("/users/me", middleware.mith.GetMe)
+	micro.Get("/users/me", middleware.DeserializeUser, user.GetMe)
 
 	micro.Get("/healthchecker", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
