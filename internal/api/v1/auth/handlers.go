@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"Games/internal/DTO/userDTO"
 	"Games/internal/config"
 	"Games/internal/database"
 	"Games/internal/models"
@@ -24,7 +25,7 @@ import (
 // @Failure      400
 // @Router		 /api/v1/auth/register [post]
 func SignUpUser(c *fiber.Ctx) error {
-	var payload *models.SignUpInput
+	var payload *userDTO.SignUpInput
 
 	if err := c.BodyParser(&payload); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
@@ -78,7 +79,7 @@ func SignUpUser(c *fiber.Ctx) error {
 				}}})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"data": fiber.Map{"user": models.FilterUserRecord(&newUser)}})
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"data": fiber.Map{"user": userDTO.FilterUserRecord(&newUser)}})
 }
 
 // SignInUser godoc
@@ -91,7 +92,7 @@ func SignUpUser(c *fiber.Ctx) error {
 // @Failure     400
 // @Router	    /api/v1/auth/login [post]
 func SignInUser(c *fiber.Ctx) error {
-	var payload *models.SignInInput
+	var payload *userDTO.SignInInput
 
 	if err := c.BodyParser(&payload); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(validation.ApiError{
