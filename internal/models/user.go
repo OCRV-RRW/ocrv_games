@@ -33,12 +33,3 @@ type UserResponse struct {
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
 }
-
-func FilterUserRecord(user *User) UserResponse {
-	return UserResponse{
-		ID:        *user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		CreatedAt: *user.CreatedAt,
-	}
-}
