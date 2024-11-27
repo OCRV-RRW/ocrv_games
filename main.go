@@ -2,6 +2,8 @@ package main
 
 import (
 	"Games/internal/api/v1/auth"
+	"Games/internal/api/v1/game"
+	"Games/internal/api/v1/tag"
 	"Games/internal/api/v1/user"
 	"Games/internal/config"
 	"Games/internal/database"
@@ -29,6 +31,7 @@ func main() {
 		log.Fatalln("Failed to load environment variables! \n", err.Error())
 	}
 	database.InitDB(&conf)
+	database.ConnectRedis(&conf)
 
 	app := fiber.New()
 	micro := fiber.New()
@@ -53,6 +56,8 @@ func main() {
 	//}))
 
 	micro.Route("/auth", auth.AddRoutes)
+	micro.Route("/game", game.AddRoutes)
+	micro.Route("/tag", tag.AddRoutes)
 
 	micro.Get("/users/me", middleware.DeserializeUser, user.GetMe)
 

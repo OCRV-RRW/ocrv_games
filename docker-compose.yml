@@ -16,9 +16,17 @@ services:
       - postgres_volume:/var/lib/postgresql/data/
     networks:
       - myNetwork
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - ${REDIS_PORT}:6379
+    volumes:
+      - redis_volume:/data
 
 volumes:
   postgres_volume:
+  redis_volume:
 
 networks:
   myNetwork:
