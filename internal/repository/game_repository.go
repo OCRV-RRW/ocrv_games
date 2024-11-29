@@ -1,4 +1,4 @@
-package game_repository
+package repository
 
 import (
 	"Games/internal/models"

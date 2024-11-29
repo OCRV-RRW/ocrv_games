@@ -7,7 +7,6 @@ import (
 	"Games/internal/api/v1/user"
 	"Games/internal/config"
 	"Games/internal/database"
-	"Games/internal/middleware"
 	"fmt"
 	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
@@ -55,11 +54,10 @@ func main() {
 	//	AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
 	//}))
 
-	micro.Route("/auth", auth.AddRoutes)
+	micro.Route("/", auth.AddRoutes)
 	micro.Route("/game", game.AddRoutes)
 	micro.Route("/tag", tag.AddRoutes)
-
-	micro.Get("/users/me", middleware.DeserializeUser, user.GetMe)
+	micro.Route("/", user.AddRoutes)
 
 	micro.Get("/healthchecker", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{

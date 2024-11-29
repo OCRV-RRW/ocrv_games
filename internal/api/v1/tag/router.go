@@ -7,4 +7,5 @@ import (
 
 func AddRoutes(router fiber.Router) {
 	router.Post("/", middleware.DeserializeUser, CreateTag)
+	router.Get("/", GetTags)
 }

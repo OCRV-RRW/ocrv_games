@@ -7,5 +7,5 @@ import (
 
 func AddRoutes(router fiber.Router) {
 	router.Post("/", middleware.DeserializeUser, CreateGame)
-	router.Get("/", middleware.DeserializeUser, GetGame)
+	router.Get("/", middleware.DeserializeUser, GetGames)
 }

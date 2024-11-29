@@ -6,8 +6,12 @@ import (
 )
 
 func AddRoutes(router fiber.Router) {
-	router.Post("/register", SignUpUser)
-	router.Post("/refresh", RefreshAccessToken)
-	router.Post("/login", SignInUser)
-	router.Get("/logout", middleware.DeserializeUser, LogoutUser)
+	auth := router.Group("auth")
+	auth.Post("/register", SignUpUser)
+	auth.Post("/refresh", RefreshAccessToken)
+	auth.Post("/login", SignInUser)
+	auth.Get("/logout", middleware.DeserializeUser, LogoutUser)
+	auth.Get("/verifyemail/:verificationCode", VerifyEmail)
+	auth.Get("/forgot_password/", ForgotPassword)
+	auth.Post("/reset_password/:resetToken", middleware.DeserializeUser, ForgotPassword)
 }
