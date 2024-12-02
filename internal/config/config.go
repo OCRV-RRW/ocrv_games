@@ -19,6 +19,8 @@ type Config struct {
 	RedisPort string `mapstructure:"REDIS_PORT"`
 	RedisHost string `mapstructure:"REDIS_HOST"`
 
+	ResetPasswordTokenExpiredIn time.Duration `mapstructure:"RESET_PASSWORD_TOKEN_EXPIRED_IN"`
+
 	// Token
 	AccessTokenPrivateKey  string        `mapstructure:"ACCESS_TOKEN_PRIVATE_KEY"`
 	AccessTokenPublicKey   string        `mapstructure:"ACCESS_TOKEN_PUBLIC_KEY"`

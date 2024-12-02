@@ -34,7 +34,7 @@ func CreateToken(userid string, ttl time.Duration, privateKey string) (*TokenDet
 	if err != nil {
 		return nil, fmt.Errorf("could not decode token private key: %w", err)
 	}
-	key, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(decodedPrivateKey))
+	key, err := jwt.ParseRSAPrivateKeyFromPEM(decodedPrivateKey)
 
 	if err != nil {
 		return nil, fmt.Errorf("create: parse token private key: %w", err)

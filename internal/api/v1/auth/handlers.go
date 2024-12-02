@@ -11,7 +11,6 @@ import (
 	"context"
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"strings"
 	"time"
@@ -43,7 +42,7 @@ func SignUpUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "passwords do not match"})
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
+	hashedPassword, err := utils.HashPassword(payload.Password)
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
@@ -75,7 +74,7 @@ func SignUpUser(c *fiber.Ctx) error {
 		URL:       config.ClientOrigin + "/api/v1/auth/verifyemail/" + verificationCode,
 		FirstName: newUser.Name,
 		Subject:   "Your account verification code",
-	})
+	}, "verificationCode.html")
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"status":  "success",
@@ -111,7 +110,7 @@ func SignInUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Invalid email or password"})
 	}
 
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password))
+	err := utils.VerifyPassword(user.Password, payload.Password)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Invalid email or password"})
 	}
@@ -340,17 +339,65 @@ func ForgotPassword(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "fail", "message": "Account not verified"})
 	}
 
-	//config, _ := config.LoadConfig(".")
+	config, _ := config.LoadConfig(".")
 	//
-	//// Generate Verification Code
-	//resetToken := utils.GenerateCode(30)
-	//ctx := context.TODO()
-	//database.RedisClient.Set(ctx, resetToken,
-	//	user.ID.String(),
+	// Generate Verification Code
+	resetToken := utils.GenerateCode(30)
+	ctx := context.TODO()
+	database.RedisClient.Set(ctx, resetToken, user.ID.String(), config.ResetPasswordTokenExpiredIn)
+	utils.SendEmail(user, &utils.EmailData{
+		URL:       config.ClientOrigin + "/api/v1/auth/resetpassword/" + resetToken,
+		FirstName: user.Name,
+		Subject:   "Your password reset token (valid for 10min)",
+	}, "resetPassword.html")
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status":  "success",
+		"message": "We sent an email with a reset code to " + user.Email,
+	})
 }
 
 func ResetPassword(c *fiber.Ctx) error {
+	message := "could not reset password."
+	var payload *userDTO.ResetPasswordInput
 	resetToken := c.Params("resetToken")
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
+	repo := repository.NewUserRepository()
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+	}
+
+	errors := validation.ValidateStruct(payload)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "errors": errors})
+	}
+
+	if payload.Password != payload.ConfirmPassword {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Passwords do not match"})
+	}
+
+	ctx := context.TODO()
+	userid, err := database.RedisClient.Get(ctx, resetToken).Result()
+	if err == redis.Nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "The reset token is invalid or has expired"})
+	}
+	user, err := repo.GetUserById(userid)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": message})
+	}
+
+	hashedPassword, _ := utils.HashPassword(payload.Password)
+
+	user.Password = hashedPassword
+	err = repo.Update(user)
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": message})
+	}
+
+	_, err = database.RedisClient.Del(ctx, resetToken).Result()
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "Password data updated successfully"})
 }
