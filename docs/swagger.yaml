@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  userDTO.ForgotPasswordInput:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
   userDTO.ResetPasswordInput:
     properties:
       confirm_password:
@@ -36,7 +43,7 @@ definitions:
     - password
     - password_confirm
     type: object
-host: localhost:8080
+host: localhost:8000
 info:
   contact:
     email: fiber@swagger.io
@@ -49,6 +56,33 @@ info:
   title: Fiber Example API
   version: "1.0"
 paths:
+  /api/v1/auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: forgot password
+      parameters:
+      - description: ForgotPasswordInput
+        in: body
+        name: ForgotPasswordInput
+        required: true
+        schema:
+          $ref: '#/definitions/userDTO.ForgotPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: User email is not verified
+          schema:
+            type: nil
+        "404":
+          description: Not Found
+        "502":
+          description: Bad Gateway
   /api/v1/auth/login:
     post:
       consumes:
@@ -68,6 +102,8 @@ paths:
           description: OK
         "400":
           description: Bad Request
+        "422":
+          description: Unprocessable Entity
   /api/v1/auth/logout:
     get:
       consumes:
@@ -78,13 +114,59 @@ paths:
       responses:
         "200":
           description: OK
+        "403":
+          description: Forbidden
+        "502":
+          description: Bad Gateway
+  /api/v1/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: refresh access token
+      responses:
+        "200":
+          description: OK
+        "403":
+          description: Forbidden
+        "422":
+          description: Unprocessable Entity
+        "502":
+          description: Bad Gateway
   /api/v1/auth/register:
     post:
       consumes:
       - application/json
-      description: reset user password
+      description: sign up user
       parameters:
       - description: SignUpInput
+        in: body
+        name: SignUpInput
+        required: true
+        schema:
+          $ref: '#/definitions/userDTO.SignUpInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "409":
+          description: Conflict
+        "502":
+          description: Bad Gateway
+  /api/v1/auth/reset-password:
+    patch:
+      consumes:
+      - application/json
+      description: reset user password
+      parameters:
+      - description: reset code
+        in: path
+        name: reset_code
+        required: true
+        type: string
+      - description: ResetPasswordInput
         in: body
         name: ResetPasswordInput
         required: true
@@ -99,4 +181,22 @@ paths:
           description: Bad Request
         "502":
           description: Bad Gateway
+  /api/v1/auth/verify-email:
+    post:
+      description: verify user email
+      parameters:
+      - description: Verification code
+        in: path
+        name: verify_code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "409":
+          description: Conflict
 swagger: "2.0"

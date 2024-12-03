@@ -25,8 +25,9 @@ import (
 // @Accept		 json
 // @Produce		 json
 // @Param        SignUpInput		body		userDTO.SignUpInput		true   "SignUpInput"
-// @Success		 200
+// @Success		 201
 // @Failure      400
+// @Failure      409
 // @Failure      502
 // @Router		 /api/v1/auth/register [post]
 func SignUpUser(c *fiber.Ctx) error {
@@ -68,7 +69,7 @@ func SignUpUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusConflict).JSON(
 			fiber.Map{"status": "fail", "message": "User with that email already exists"})
 	} else if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": err.Error()})
 	}
 
 	//Send verification code.
@@ -93,6 +94,7 @@ func SignUpUser(c *fiber.Ctx) error {
 // @Produce		json
 // @Success		200
 // @Failure     400
+// @Failure     422
 // @Router	    /api/v1/auth/login [post]
 func SignInUser(c *fiber.Ctx) error {
 	var payload *userDTO.SignInInput
@@ -191,6 +193,8 @@ func SignInUser(c *fiber.Ctx) error {
 // @Accept		json
 // @Produce		json
 // @Success	    200
+// @Failure     403
+// @Failure     502
 // @Router		/api/v1/auth/logout [get]
 func LogoutUser(c *fiber.Ctx) error {
 	message := "Token is invalid or session has expired"
@@ -234,6 +238,15 @@ func LogoutUser(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }
 
+// RefreshAccessToken godoc
+//
+// @Description	refresh access token
+// @Accept		json
+// @Success	    200
+// @Failure     403
+// @Failure     502
+// @Failure     422
+// @Router		/api/v1/auth/refresh [post]
 func RefreshAccessToken(c *fiber.Ctx) error {
 	message := "could not refresh access token"
 
@@ -305,6 +318,15 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "access_token": accessTokenDetails.Token})
 }
 
+// VerifyEmail godoc
+//
+// @Description	 verify user email
+// @Produce      json
+// @Param        verify_code   path string true "Verification code"
+// @Success		 200
+// @Failure      400
+// @Failure      409
+// @Router		 /api/v1/auth/verify-email [post]
 func VerifyEmail(c *fiber.Ctx) error {
 	verificationCode := c.Params("verificationCode")
 
@@ -329,12 +351,14 @@ func VerifyEmail(c *fiber.Ctx) error {
 //
 // @Description	 forgot password
 // @Accept		 json
-// @Produce		 json
+// @Produce      json
 // @Param        ForgotPasswordInput		body		userDTO.ForgotPasswordInput		true   "ForgotPasswordInput"
 // @Success		 200
 // @Failure      400
+// @Failure      401 nil nil  "User email is not verified"
+// @Failure      404
 // @Failure      502
-// @Router		 /api/v1/auth/register [patch]
+// @Router		 /api/v1/auth/forgot-password [post]
 func ForgotPassword(c *fiber.Ctx) error {
 	repo := repository.NewUserRepository()
 	var payload userDTO.ForgotPasswordInput
@@ -350,7 +374,7 @@ func ForgotPassword(c *fiber.Ctx) error {
 	}
 	user, err := repo.GetByEmail(payload.Email)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Invalid email"})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "fail", "message": "Invalid email"})
 	}
 
 	if !user.Verified {
@@ -380,11 +404,12 @@ func ForgotPassword(c *fiber.Ctx) error {
 // @Description	 reset user password
 // @Accept		 json
 // @Produce		 json
+// @Param        reset_code   path string true "reset code"
 // @Param        ResetPasswordInput		body		userDTO.ResetPasswordInput		true   "ResetPasswordInput"
 // @Success		 200
 // @Failure      400
 // @Failure      502
-// @Router		 /api/v1/auth/register [patch]
+// @Router		 /api/v1/auth/reset-password [patch]
 func ResetPassword(c *fiber.Ctx) error {
 	message := "could not reset password."
 	var payload *userDTO.ResetPasswordInput

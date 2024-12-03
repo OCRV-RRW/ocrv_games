@@ -23,6 +23,48 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/auth/forgot-password": {
+            "post": {
+                "description": "forgot password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "description": "ForgotPasswordInput",
+                        "name": "ForgotPasswordInput",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/userDTO.ForgotPasswordInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "User email is not verified",
+                        "schema": {
+                            "type": "nil"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "502": {
+                        "description": "Bad Gateway"
+                    }
+                }
+            }
+        },
         "/api/v1/auth/login": {
             "post": {
                 "description": "sign in user",
@@ -49,6 +91,9 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request"
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity"
                     }
                 }
             }
@@ -65,13 +110,41 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "502": {
+                        "description": "Bad Gateway"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/refresh": {
+            "post": {
+                "description": "refresh access token",
+                "consumes": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity"
+                    },
+                    "502": {
+                        "description": "Bad Gateway"
                     }
                 }
             }
         },
         "/api/v1/auth/register": {
             "post": {
-                "description": "reset user password",
+                "description": "sign up user",
                 "consumes": [
                     "application/json"
                 ],
@@ -81,6 +154,49 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "SignUpInput",
+                        "name": "SignUpInput",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/userDTO.SignUpInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "409": {
+                        "description": "Conflict"
+                    },
+                    "502": {
+                        "description": "Bad Gateway"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/reset-password": {
+            "patch": {
+                "description": "reset user password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "reset code",
+                        "name": "reset_code",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "ResetPasswordInput",
                         "name": "ResetPasswordInput",
                         "in": "body",
                         "required": true,
@@ -101,9 +217,48 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/auth/verify-email": {
+            "post": {
+                "description": "verify user email",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Verification code",
+                        "name": "verify_code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "409": {
+                        "description": "Conflict"
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "userDTO.ForgotPasswordInput": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
         "userDTO.ResetPasswordInput": {
             "type": "object",
             "required": [
@@ -163,7 +318,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "localhost:8000",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Fiber Example API",
