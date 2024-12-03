@@ -13,5 +13,5 @@ func AddRoutes(router fiber.Router) {
 	auth.Get("/logout", middleware.DeserializeUser, LogoutUser)
 	auth.Get("/verifyemail/:verificationCode", VerifyEmail)
 	auth.Post("/forgotpassword", ForgotPassword)
-	auth.Post("/resetpassword/:resetToken", ResetPassword)
+	auth.Patch("/resetpassword/:resetToken", ResetPassword)
 }

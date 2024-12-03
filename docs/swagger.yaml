@@ -1,6 +1,16 @@
 basePath: /
 definitions:
-  models.SignInInput:
+  userDTO.ResetPasswordInput:
+    properties:
+      confirm_password:
+        type: string
+      password:
+        type: string
+    required:
+    - confirm_password
+    - password
+    type: object
+  userDTO.SignInInput:
     properties:
       email:
         type: string
@@ -10,7 +20,7 @@ definitions:
     - email
     - password
     type: object
-  models.SignUpInput:
+  userDTO.SignUpInput:
     properties:
       email:
         type: string
@@ -50,7 +60,7 @@ paths:
         name: SignInInput
         required: true
         schema:
-          $ref: '#/definitions/models.SignInInput'
+          $ref: '#/definitions/userDTO.SignInInput'
       produces:
       - application/json
       responses:
@@ -72,14 +82,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: sign up user
+      description: reset user password
       parameters:
       - description: SignUpInput
         in: body
-        name: SignUpInput
+        name: ResetPasswordInput
         required: true
         schema:
-          $ref: '#/definitions/models.SignUpInput'
+          $ref: '#/definitions/userDTO.ResetPasswordInput'
       produces:
       - application/json
       responses:
@@ -87,4 +97,6 @@ paths:
           description: OK
         "400":
           description: Bad Request
+        "502":
+          description: Bad Gateway
 swagger: "2.0"

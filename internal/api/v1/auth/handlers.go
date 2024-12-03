@@ -6,10 +6,13 @@ import (
 	"Games/internal/database"
 	"Games/internal/models"
 	"Games/internal/repository"
+	"Games/internal/token"
 	"Games/internal/utils"
 	"Games/internal/validation"
 	"context"
+	"errors"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"strings"
@@ -21,7 +24,7 @@ import (
 // @Description	 sign up user
 // @Accept		 json
 // @Produce		 json
-// @Param        SignUpInput		body		models.SignUpInput		true   "SignUpInput"
+// @Param        SignUpInput		body		userDTO.SignUpInput		true   "SignUpInput"
 // @Success		 200
 // @Failure      400
 // @Failure      502
@@ -86,7 +89,7 @@ func SignUpUser(c *fiber.Ctx) error {
 //
 // @Description	sign in user
 // @Accept      json
-// @Param       SignInInput		body		models.SignInInput		true   "SignInInput"
+// @Param       SignInInput		body		userDTO.SignInInput		true   "SignInInput"
 // @Produce		json
 // @Success		200
 // @Failure     400
@@ -120,26 +123,32 @@ func SignInUser(c *fiber.Ctx) error {
 	}
 
 	config, _ := config.LoadConfig(".")
-	accessTokenDetails, err := utils.CreateToken(user.ID.String(), config.AccessTokenExpiresIn, config.AccessTokenPrivateKey)
+	accessTokenDetails, err := token.CreateToken(user.ID.String(), config.AccessTokenExpiresIn, config.AccessTokenPrivateKey)
 	if err != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"status": "fail", "message": err.Error()})
 	}
 
-	refreshTokenDetails, err := utils.CreateToken(user.ID.String(), config.RefreshTokenExpiresIn, config.RefreshTokenPrivateKey)
+	refreshTokenDetails, err := token.CreateToken(user.ID.String(), config.RefreshTokenExpiresIn, config.RefreshTokenPrivateKey)
 	if err != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"status": "fail", "message": err.Error()})
 	}
-
-	ctx := context.TODO()
+	tokenRepo := token.NewAuthTokenRepository(database.RedisClient)
 	now := time.Now()
+	errAccess := tokenRepo.SaveToken(
+		user.ID.String(),
+		accessTokenDetails,
+		time.Unix(*accessTokenDetails.ExpiresIn, 0).Sub(now))
 
-	errAccess := database.RedisClient.Set(ctx, accessTokenDetails.TokenUuid, user.ID.String(), time.Unix(*accessTokenDetails.ExpiresIn, 0).Sub(now)).Err()
 	if errAccess != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"status": "fail", "message": errAccess.Error()})
 	}
 
-	errRefresh := database.RedisClient.Set(ctx, refreshTokenDetails.TokenUuid, user.ID.String(), time.Unix(*refreshTokenDetails.ExpiresIn, 0).Sub(now)).Err()
-	if errAccess != nil {
+	errRefresh := tokenRepo.SaveToken(
+		user.ID.String(),
+		refreshTokenDetails,
+		time.Unix(*refreshTokenDetails.ExpiresIn, 0).Sub(now))
+
+	if errRefresh != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"status": "fail", "message": errRefresh.Error()})
 	}
 
@@ -193,15 +202,15 @@ func LogoutUser(c *fiber.Ctx) error {
 	}
 
 	config, _ := config.LoadConfig(".")
-	ctx := context.TODO()
 
-	tokenClaims, err := utils.ValidateToken(refresh_token, config.RefreshTokenPublicKey)
+	tokenClaims, err := token.ValidateToken(refresh_token, config.RefreshTokenPublicKey)
 	if err != nil {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": err.Error()})
 	}
 
-	access_token_uuid := c.Locals("access_token_uuid").(string)
-	_, err = database.RedisClient.Del(ctx, tokenClaims.TokenUuid, access_token_uuid).Result()
+	accessTokenUuid := c.Locals("access_token_uuid").(string)
+	tokenRepo := token.NewAuthTokenRepository(database.RedisClient)
+	err = tokenRepo.RemoveTokenByTokenUuid(accessTokenUuid, tokenClaims.TokenUuid)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": err.Error()})
 	}
@@ -233,16 +242,16 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 	if refresh_token == "" {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": message})
 	}
-
 	config, _ := config.LoadConfig(".")
-	ctx := context.TODO()
-	tokenClaims, err := utils.ValidateToken(refresh_token, config.RefreshTokenPublicKey)
+
+	// Validate refresh token, and search token in redis
+	tokenClaims, err := token.ValidateToken(refresh_token, config.RefreshTokenPublicKey)
 	if err != nil {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": err.Error()})
 	}
-
-	userid, err := database.RedisClient.Get(ctx, tokenClaims.TokenUuid).Result()
-	if err == redis.Nil {
+	tokenRepo := token.NewAuthTokenRepository(database.RedisClient)
+	userid, err := tokenRepo.GetUserIdByTokenUuid(tokenClaims.TokenUuid)
+	if errors.Is(err, redis.Nil) || userid == "" {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": message})
 	}
 
@@ -250,7 +259,7 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 	err = database.DB.First(&user, "id = ?", userid).Error
 
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 				"status":  "fail",
 				"message": "the user belonging to this token no logger exists"})
@@ -259,17 +268,16 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 		}
 	}
 
-	accessTokenDetails, err := utils.CreateToken(user.ID.String(), config.AccessTokenExpiresIn, config.AccessTokenPrivateKey)
+	// Create and save new access token
+	now := time.Now()
+	accessTokenDetails, err := token.CreateToken(user.ID.String(), config.AccessTokenExpiresIn, config.AccessTokenPrivateKey)
 	if err != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"status": "fail", "message": err.Error()})
 	}
-
-	now := time.Now()
-
-	errAccess := database.RedisClient.Set(
-		ctx, accessTokenDetails.TokenUuid,
+	errAccess := tokenRepo.SaveToken(
 		user.ID.String(),
-		time.Unix(*accessTokenDetails.ExpiresIn, 0).Sub(now)).Err()
+		accessTokenDetails,
+		time.Unix(*accessTokenDetails.ExpiresIn, 0).Sub(now))
 	if errAccess != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"status": "fail", "message": errAccess.Error()})
 	}
@@ -317,6 +325,16 @@ func VerifyEmail(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "Email verified successfully"})
 }
 
+// ForgotPassword godoc
+//
+// @Description	 forgot password
+// @Accept		 json
+// @Produce		 json
+// @Param        ForgotPasswordInput		body		userDTO.ForgotPasswordInput		true   "ForgotPasswordInput"
+// @Success		 200
+// @Failure      400
+// @Failure      502
+// @Router		 /api/v1/auth/register [patch]
 func ForgotPassword(c *fiber.Ctx) error {
 	repo := repository.NewUserRepository()
 	var payload userDTO.ForgotPasswordInput
@@ -340,8 +358,8 @@ func ForgotPassword(c *fiber.Ctx) error {
 	}
 
 	config, _ := config.LoadConfig(".")
-	//
-	// Generate Verification Code
+
+	// Generate and send to email verification Code
 	resetToken := utils.GenerateCode(30)
 	ctx := context.TODO()
 	database.RedisClient.Set(ctx, resetToken, user.ID.String(), config.ResetPasswordTokenExpiredIn)
@@ -357,31 +375,43 @@ func ForgotPassword(c *fiber.Ctx) error {
 	})
 }
 
+// ResetPassword godoc
+//
+// @Description	 reset user password
+// @Accept		 json
+// @Produce		 json
+// @Param        ResetPasswordInput		body		userDTO.ResetPasswordInput		true   "ResetPasswordInput"
+// @Success		 200
+// @Failure      400
+// @Failure      502
+// @Router		 /api/v1/auth/register [patch]
 func ResetPassword(c *fiber.Ctx) error {
 	message := "could not reset password."
 	var payload *userDTO.ResetPasswordInput
 	resetToken := c.Params("resetToken")
 
-	repo := repository.NewUserRepository()
+	userRepo := repository.NewUserRepository()
 	if err := c.BodyParser(&payload); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
 	}
 
-	errors := validation.ValidateStruct(payload)
-	if errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "errors": errors})
+	userErrors := validation.ValidateStruct(payload)
+	if userErrors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "userErrors": userErrors})
 	}
 
 	if payload.Password != payload.ConfirmPassword {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Passwords do not match"})
 	}
 
+	tokenRepo := token.NewAuthTokenRepository(database.RedisClient)
+
 	ctx := context.TODO()
 	userid, err := database.RedisClient.Get(ctx, resetToken).Result()
-	if err == redis.Nil {
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "The reset token is invalid or has expired"})
 	}
-	user, err := repo.GetUserById(userid)
+	user, err := userRepo.GetUserById(userid)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": message})
 	}
@@ -389,7 +419,7 @@ func ResetPassword(c *fiber.Ctx) error {
 	hashedPassword, _ := utils.HashPassword(payload.Password)
 
 	user.Password = hashedPassword
-	err = repo.Update(user)
+	err = userRepo.Update(user)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": message})
 	}
@@ -397,6 +427,11 @@ func ResetPassword(c *fiber.Ctx) error {
 	_, err = database.RedisClient.Del(ctx, resetToken).Result()
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+	}
+
+	err = tokenRepo.RemoveAllUserToken(user.ID.String())
+	if err != nil {
+		log.Warnf("Couldn't reset user token error: %v", err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "Password data updated successfully"})

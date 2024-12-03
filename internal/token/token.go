@@ -1,10 +1,14 @@
-package utils
+package token
 
 import (
+	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
+	"strings"
 	"time"
 )
 
@@ -13,6 +17,77 @@ type TokenDetails struct {
 	TokenUuid string
 	UserID    string
 	ExpiresIn *int64
+}
+
+type AuthTokenRepository struct {
+	rdb *redis.Client
+}
+
+func NewAuthTokenRepository(rdb *redis.Client) *AuthTokenRepository {
+	return &AuthTokenRepository{rdb}
+}
+
+func (c *AuthTokenRepository) removeTokensByPattern(pattens ...string) error {
+	ctx := context.TODO()
+	for _, pattern := range pattens {
+		iter := c.rdb.Scan(ctx, 0, pattern, 0).Iterator()
+		for iter.Next(ctx) {
+			c.rdb.Del(ctx, iter.Val())
+		}
+		if err := iter.Err(); err != nil {
+			return err
+		}
+		return nil
+	}
+	return nil
+}
+
+func (c *AuthTokenRepository) RemoveAllUserToken(userId string) error {
+	pattern := fmt.Sprintf("%s:*", userId)
+	return c.removeTokensByPattern(pattern)
+}
+
+func (c *AuthTokenRepository) RemoveTokenByTokenUuid(tokenUuids ...string) error {
+	for _, tokenUuid := range tokenUuids {
+		pattern := fmt.Sprintf("*:%s", tokenUuid)
+		if err := c.removeTokensByPattern(pattern); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *AuthTokenRepository) GetUserIdByTokenUuid(tokenUuid string) (string, error) {
+	ctx := context.TODO()
+	pattern := fmt.Sprintf("*:%s", tokenUuid)
+	var cursor uint64
+	for {
+		var keys []string
+		var err error
+		keys, cursor, err = c.rdb.Scan(ctx, cursor, pattern, 1).Result()
+		if err != nil {
+			return "", err
+		}
+
+		if len(keys) >= 1 {
+			userId := strings.Split(keys[0], ":")[0]
+			if userId == "" {
+				return "", errors.New("not found")
+			}
+			return userId, nil
+		}
+
+		if cursor == 0 { // no more keys
+			break
+		}
+	}
+	return "", redis.Nil
+}
+
+func (c *AuthTokenRepository) SaveToken(userId string, token *TokenDetails, expiration time.Duration) error {
+	ctx := context.TODO()
+	key := fmt.Sprintf("%s:%s", userId, token.TokenUuid)
+	return c.rdb.Set(ctx, key, userId, expiration).Err()
 }
 
 func CreateToken(userid string, ttl time.Duration, privateKey string) (*TokenDetails, error) {

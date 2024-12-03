@@ -39,7 +39,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.SignInInput"
+                            "$ref": "#/definitions/userDTO.SignInInput"
                         }
                     }
                 ],
@@ -71,7 +71,7 @@ const docTemplate = `{
         },
         "/api/v1/auth/register": {
             "post": {
-                "description": "sign up user",
+                "description": "reset user password",
                 "consumes": [
                     "application/json"
                 ],
@@ -81,11 +81,11 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "SignUpInput",
-                        "name": "SignUpInput",
+                        "name": "ResetPasswordInput",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.SignUpInput"
+                            "$ref": "#/definitions/userDTO.ResetPasswordInput"
                         }
                     }
                 ],
@@ -95,13 +95,31 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request"
+                    },
+                    "502": {
+                        "description": "Bad Gateway"
                     }
                 }
             }
         }
     },
     "definitions": {
-        "models.SignInInput": {
+        "userDTO.ResetPasswordInput": {
+            "type": "object",
+            "required": [
+                "confirm_password",
+                "password"
+            ],
+            "properties": {
+                "confirm_password": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "userDTO.SignInInput": {
             "type": "object",
             "required": [
                 "email",
@@ -116,7 +134,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.SignUpInput": {
+        "userDTO.SignUpInput": {
             "type": "object",
             "required": [
                 "email",
