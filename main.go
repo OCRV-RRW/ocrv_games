@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"log"
 )
@@ -35,6 +36,13 @@ func main() {
 	app := fiber.New()
 	micro := fiber.New()
 
+	app.Use(cors.New(cors.Config{
+		AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin",
+		AllowOrigins:     "http://localhost:3000",
+		AllowCredentials: true,
+		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
+	}))
+
 	cfg := swagger.Config{
 		BasePath: "/",
 		FilePath: "./docs/swagger.json",
@@ -46,13 +54,6 @@ func main() {
 
 	app.Mount("/api/v1", micro)
 	app.Use(logger.New())
-
-	//app.Use(cors.New(cors.Config{
-	//	AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin",
-	//	AllowOrigins:     "*",
-	//	AllowCredentials: true,
-	//	AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
-	//}))
 
 	micro.Route("/", auth.AddRoutes)
 	micro.Route("/game", game.AddRoutes)
