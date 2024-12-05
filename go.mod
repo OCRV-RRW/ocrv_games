@@ -1,6 +1,6 @@
 module Games
 
-go 1.23.3
+go 1.23
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect

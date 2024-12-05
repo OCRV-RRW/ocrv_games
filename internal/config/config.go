@@ -7,6 +7,10 @@ import (
 )
 
 type Config struct {
+	AppPort int `mapstructure:"APP_PORT"`
+
+	ClientOrigin string `mapstructure:"CLIENT_ORIGIN"`
+
 	//Postgres
 	DBHost         string `mapstructure:"POSTGRES_HOST"`
 	DBUserName     string `mapstructure:"POSTGRES_USER"`
@@ -14,8 +18,7 @@ type Config struct {
 	DBName         string `mapstructure:"POSTGRES_DB"`
 	DBPort         string `mapstructure:"POSTGRES_PORT"`
 
-	ClientOrigin string `mapstructure:"CLIENT_ORIGIN"`
-
+	//Redis
 	RedisPort string `mapstructure:"REDIS_PORT"`
 	RedisHost string `mapstructure:"REDIS_HOST"`
 
