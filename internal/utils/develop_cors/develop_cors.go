@@ -186,11 +186,7 @@ func New(config ...cors.Config) fiber.Handler {
 // Function to set CORS headers
 func setCORSHeaders(c *fiber.Ctx, allowOrigin, allowMethods, allowHeaders, exposeHeaders, maxAge string, cfg cors.Config) {
 	if cfg.AllowCredentials {
-		// When AllowCredentials is true, set the Access-Control-Allow-Origin to the specific origin instead of '*'
-		if allowOrigin == "*" {
-			c.Set(fiber.HeaderAccessControlAllowOrigin, allowOrigin)
-			log.Warn("[CORS] 'AllowCredentials' is true, but 'AllowOrigins' cannot be set to '*'.")
-		} else if allowOrigin != "" {
+		if allowOrigin != "" {
 			c.Set(fiber.HeaderAccessControlAllowOrigin, allowOrigin)
 			c.Set(fiber.HeaderAccessControlAllowCredentials, "true")
 		}
