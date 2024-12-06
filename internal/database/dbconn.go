@@ -14,9 +14,13 @@ import (
 var DB *gorm.DB
 
 func getConnectionString(config *config.Config) string {
-	return fmt.Sprintf("host=%s port=%s user=%s "+
+	dsn := fmt.Sprintf("host=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable",
-		config.DBHost, config.DBPort, config.DBUserName, config.DBUserPassword, config.DBName)
+		config.DBHost, config.DBUserName, config.DBUserPassword, config.DBName)
+	if config.DBPort != "" {
+		dsn += fmt.Sprintf(" port=%v", config.DBPort)
+	}
+	return dsn
 }
 
 func InitDB(config *config.Config) {
