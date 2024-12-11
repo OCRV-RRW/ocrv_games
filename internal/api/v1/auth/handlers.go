@@ -22,6 +22,7 @@ import (
 // SignUpUser godoc
 //
 // @Description	 sign up user
+// @Tags         Auth
 // @Accept		 json
 // @Produce		 json
 // @Param        SignUpInput		body		userDTO.SignUpInput		true   "SignUpInput"
@@ -89,6 +90,7 @@ func SignUpUser(c *fiber.Ctx) error {
 // SignInUser godoc
 //
 // @Description	sign in user
+// @Tags         Auth
 // @Accept      json
 // @Param       SignInInput		body		userDTO.SignInInput		true   "SignInInput"
 // @Produce		json
@@ -190,6 +192,7 @@ func SignInUser(c *fiber.Ctx) error {
 // LogoutUser godoc
 //
 // @Description	logout
+// @Tags         Auth
 // @Accept		json
 // @Produce		json
 // @Success	    200
@@ -241,6 +244,7 @@ func LogoutUser(c *fiber.Ctx) error {
 // RefreshAccessToken godoc
 //
 // @Description	refresh access token
+// @Tags         Auth
 // @Accept		json
 // @Success	    200
 // @Failure     403
@@ -321,6 +325,7 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 // VerifyEmail godoc
 //
 // @Description	 verify user email
+// @Tags         Auth
 // @Produce      json
 // @Param        verify_code   path string true "Verification code"
 // @Success		 200
@@ -350,6 +355,7 @@ func VerifyEmail(c *fiber.Ctx) error {
 // ForgotPassword godoc
 //
 // @Description	 forgot password
+// @Tags         Auth
 // @Accept		 json
 // @Produce      json
 // @Param        ForgotPasswordInput		body		userDTO.ForgotPasswordInput		true   "ForgotPasswordInput"
@@ -402,6 +408,7 @@ func ForgotPassword(c *fiber.Ctx) error {
 // ResetPassword godoc
 //
 // @Description	 reset user password
+// @Tags         Auth
 // @Accept		 json
 // @Produce		 json
 // @Param        reset_code   path string true "reset code"

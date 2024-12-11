@@ -43,6 +43,17 @@ definitions:
     - password
     - password_confirm
     type: object
+  userDTO.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
 host: localhost:8000
 info:
   contact:
@@ -83,6 +94,8 @@ paths:
           description: Not Found
         "502":
           description: Bad Gateway
+      tags:
+      - Auth
   /api/v1/auth/login:
     post:
       consumes:
@@ -104,6 +117,8 @@ paths:
           description: Bad Request
         "422":
           description: Unprocessable Entity
+      tags:
+      - Auth
   /api/v1/auth/logout:
     get:
       consumes:
@@ -118,6 +133,8 @@ paths:
           description: Forbidden
         "502":
           description: Bad Gateway
+      tags:
+      - Auth
   /api/v1/auth/refresh:
     post:
       consumes:
@@ -132,6 +149,8 @@ paths:
           description: Unprocessable Entity
         "502":
           description: Bad Gateway
+      tags:
+      - Auth
   /api/v1/auth/register:
     post:
       consumes:
@@ -155,6 +174,8 @@ paths:
           description: Conflict
         "502":
           description: Bad Gateway
+      tags:
+      - Auth
   /api/v1/auth/reset-password:
     patch:
       consumes:
@@ -181,6 +202,8 @@ paths:
           description: Bad Request
         "502":
           description: Bad Gateway
+      tags:
+      - Auth
   /api/v1/auth/verify-email:
     post:
       description: verify user email
@@ -199,4 +222,57 @@ paths:
           description: Bad Request
         "409":
           description: Conflict
+      tags:
+      - Auth
+  /api/v1/users/:
+    delete:
+      description: delete user by id
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "502":
+          description: Bad Gateway
+      tags:
+      - User
+    get:
+      description: get user by id
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/userDTO.UserResponse'
+        "502":
+          description: Bad Gateway
+      tags:
+      - User
+  /api/v1/users/me:
+    get:
+      description: get current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/userDTO.UserResponse'
+        "401":
+          description: Unauthorized
+      tags:
+      - User
 swagger: "2.0"
