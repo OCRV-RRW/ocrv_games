@@ -93,7 +93,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/userDTO.TokenResponse"
+                        }
                     },
                     "400": {
                         "description": "Bad Request"
@@ -140,7 +143,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/userDTO.TokenResponse"
+                        }
                     },
                     "403": {
                         "description": "Forbidden"
@@ -289,7 +295,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/DTO.DefaultResponse-userDTO_UserResponse"
+                            "$ref": "#/definitions/DTO.DefaultResponse-array_userDTO_UserResponseDTO"
                         }
                     },
                     "502": {
@@ -337,7 +343,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/DTO.DefaultResponse-userDTO_UserResponse"
+                            "$ref": "#/definitions/DTO.DefaultResponse-userDTO_UserResponseDTO"
                         }
                     },
                     "401": {
@@ -348,11 +354,25 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "DTO.DefaultResponse-userDTO_UserResponse": {
+        "DTO.DefaultResponse-array_userDTO_UserResponseDTO": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/userDTO.UserResponse"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/userDTO.UserResponseDTO"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.DefaultResponse-userDTO_UserResponseDTO": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/userDTO.UserResponseDTO"
                 },
                 "status": {
                     "type": "string"
@@ -423,6 +443,17 @@ const docTemplate = `{
                 }
             }
         },
+        "userDTO.TokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "userDTO.UserResponse": {
             "type": "object",
             "properties": {
@@ -437,6 +468,14 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "userDTO.UserResponseDTO": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/userDTO.UserResponse"
                 }
             }
         }

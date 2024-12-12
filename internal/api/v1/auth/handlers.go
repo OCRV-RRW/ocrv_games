@@ -111,7 +111,7 @@ func SignUpUser(c *fiber.Ctx) error {
 // @Accept      json
 // @Param       SignInInput		body		userDTO.SignInInput		true   "SignInInput"
 // @Produce		json
-// @Success		200
+// @Success		200 {object} userDTO.TokenResponse
 // @Failure     400
 // @Failure     422
 // @Router	    /api/v1/auth/login [post]
@@ -263,7 +263,7 @@ func LogoutUser(c *fiber.Ctx) error {
 // @Description	refresh access token
 // @Tags         Auth
 // @Accept		json
-// @Success	    200
+// @Success	    200 {object} userDTO.TokenResponse
 // @Failure     403
 // @Failure     502
 // @Failure     422

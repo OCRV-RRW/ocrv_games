@@ -6,6 +6,15 @@ import (
 	"time"
 )
 
+type TokenResponse struct {
+	AccessToken string `json:"access_token"`
+	Status      string `json:"status"`
+}
+
+type UserResponseDTO struct {
+	User UserResponse `json:"user"`
+}
+
 type SignUpInput struct {
 	Name            string `json:"name" validate:"required"`
 	Email           string `json:"email" validate:"required,email"`

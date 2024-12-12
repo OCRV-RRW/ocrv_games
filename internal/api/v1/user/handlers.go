@@ -13,12 +13,15 @@ import (
 // @Description	 get current user
 // @Tags         User
 // @Produce		 json
-// @Success		 200 {object}  DTO.DefaultResponse[userDTO.UserResponse]
+// @Success		 200 {object}  DTO.DefaultResponse[userDTO.UserResponseDTO]
 // @Failure      401
 // @Router		 /api/v1/users/me [get]
 func GetMe(c *fiber.Ctx) error {
 	user := c.Locals("user").(userDTO.UserResponse)
-	return c.Status(fiber.StatusOK).JSON(DTO.DefaultResponse[interface{}]{Data: fiber.Map{"user": user}, Status: "success"})
+	return c.Status(fiber.StatusOK).JSON(DTO.DefaultResponse[userDTO.UserResponseDTO]{
+		Data:   userDTO.UserResponseDTO{User: user},
+		Status: "success",
+	})
 }
 
 // DeleteUser godoc
@@ -45,7 +48,7 @@ func DeleteUser(c *fiber.Ctx) error {
 // @Tags         User
 // @Produce		 json
 // @Param        id   path string true "User ID"
-// @Success		 200 {object} DTO.DefaultResponse[userDTO.UserResponse]
+// @Success		 200 {object} DTO.DefaultResponse[[]userDTO.UserResponseDTO]
 // @Failure      502
 // @Router		 /api/v1/users/ [get]
 func GetUser(c *fiber.Ctx) error {
@@ -80,9 +83,10 @@ func GetUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail"})
 	}
 
-	var userRecords = make([]userDTO.UserResponse, len(users))
+	var userRecords = make([]userDTO.UserResponseDTO, len(users))
 	for i := 0; i < len(userRecords); i++ {
-		userRecords[i] = userDTO.FilterUserRecord(&users[i])
+		userRecords[i].User = userDTO.FilterUserRecord(&users[i])
 	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "data": userRecords})
 }

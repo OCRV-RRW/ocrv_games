@@ -1,9 +1,18 @@
 basePath: /
 definitions:
-  DTO.DefaultResponse-userDTO_UserResponse:
+  DTO.DefaultResponse-array_userDTO_UserResponseDTO:
     properties:
       data:
-        $ref: '#/definitions/userDTO.UserResponse'
+        items:
+          $ref: '#/definitions/userDTO.UserResponseDTO'
+        type: array
+      status:
+        type: string
+    type: object
+  DTO.DefaultResponse-userDTO_UserResponseDTO:
+    properties:
+      data:
+        $ref: '#/definitions/userDTO.UserResponseDTO'
       status:
         type: string
     type: object
@@ -50,6 +59,13 @@ definitions:
     - password
     - password_confirm
     type: object
+  userDTO.TokenResponse:
+    properties:
+      access_token:
+        type: string
+      status:
+        type: string
+    type: object
   userDTO.UserResponse:
     properties:
       created_at:
@@ -60,6 +76,11 @@ definitions:
         type: string
       name:
         type: string
+    type: object
+  userDTO.UserResponseDTO:
+    properties:
+      user:
+        $ref: '#/definitions/userDTO.UserResponse'
     type: object
 host: localhost:8000
 info:
@@ -120,6 +141,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/userDTO.TokenResponse'
         "400":
           description: Bad Request
         "422":
@@ -150,6 +173,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/userDTO.TokenResponse'
         "403":
           description: Forbidden
         "422":
@@ -263,7 +288,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/DTO.DefaultResponse-userDTO_UserResponse'
+            $ref: '#/definitions/DTO.DefaultResponse-array_userDTO_UserResponseDTO'
         "502":
           description: Bad Gateway
       tags:
@@ -277,7 +302,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/DTO.DefaultResponse-userDTO_UserResponse'
+            $ref: '#/definitions/DTO.DefaultResponse-userDTO_UserResponseDTO'
         "401":
           description: Unauthorized
       tags:
