@@ -8,7 +8,6 @@ import (
 	"Games/internal/token"
 	"errors"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 	"strings"
 )
 
@@ -42,7 +41,7 @@ func DeserializeUser(c *fiber.Ctx) error {
 	userRepo := repository.NewUserRepository()
 	user, err := userRepo.GetUserById(userid)
 
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if errors.Is(err, repository.ErrRecordNotFound) {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": "the user belonging to this token no logger exists"})
 	}
 

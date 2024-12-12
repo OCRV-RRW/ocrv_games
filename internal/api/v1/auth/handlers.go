@@ -38,9 +38,9 @@ func SignUpUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
 	}
 
-	errors := validation.ValidateStruct(payload)
-	if errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "errors": errors})
+	userErrors := validation.ValidateStruct(payload)
+	if userErrors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "errors": userErrors})
 	}
 
 	if payload.Password != payload.PasswordConfirm {
@@ -63,24 +63,35 @@ func SignUpUser(c *fiber.Ctx) error {
 		VerificationCode: verificationCode,
 	}
 
-	//Send verification code.
-	config, _ := config.LoadConfig(".")
-	err = utils.SendEmail(&newUser, &utils.EmailData{
-		URL:       config.ClientOrigin + "/api/v1/auth/verifyemail/" + verificationCode,
-		FirstName: newUser.Name,
-		Subject:   "Your account verification code",
-	}, "verificationCode.html")
-
-	if err != nil {
-		param := validation.GetJSONTag(payload, "Email")
-		errors = []*validation.ErrorResponse{validation.GetErrorResponse(param, "email")}
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "errors": errors})
+	r := repository.NewUserRepository()
+	_, err = r.GetByEmail(newUser.Email)
+	if err == nil {
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+			"status":  "fail",
+			"message": "User with that email already exists"})
 	}
 
-	r := repository.NewUserRepository()
-	err = r.Create(&newUser)
+	sendEmailError := errors.New("Something went wrong on sending email")
 
-	if err != nil && strings.Contains(err.Error(), "duplicate key value violates unique") {
+	err = r.CreateUserWithTransaction(&newUser, func(user *models.User) error {
+		//Send verification code.
+		config, _ := config.LoadConfig(".")
+		err = utils.SendEmail(&newUser, &utils.EmailData{
+			URL:       config.ClientOrigin + "/api/v1/auth/verifyemail/" + verificationCode,
+			FirstName: newUser.Name,
+			Subject:   "Your account verification code",
+		}, "verificationCode.html")
+		if err != nil {
+			return sendEmailError
+		}
+		return nil
+	})
+
+	if errors.Is(err, sendEmailError) {
+		param := validation.GetJSONTag(payload, "Email")
+		userErrors = []*validation.ErrorResponse{validation.GetErrorResponse(param, "email")}
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "errors": userErrors})
+	} else if errors.Is(err, repository.ErrDuplicatedKey) {
 		return c.Status(fiber.StatusConflict).JSON(
 			fiber.Map{"status": "fail", "message": "User with that email already exists"})
 	} else if err != nil {

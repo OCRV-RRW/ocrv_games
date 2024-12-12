@@ -15,26 +15,44 @@ func NewUserRepository() *UserRepository {
 }
 
 func (r *UserRepository) Create(user *models.User) error {
-	return database.DB.Create(user).Error
+	return GetRepositoryErrorByGormError(database.DB.Create(user).Error)
 }
 
 func (r *UserRepository) Update(user *models.User) error {
-	return database.DB.Save(user).Error
+	return GetRepositoryErrorByGormError(database.DB.Save(user).Error)
+}
+
+func (r *UserRepository) CreateUserWithTransaction(user *models.User, callback func(*models.User) error) error {
+	tx := database.DB.Begin()
+	err := tx.Create(user).Error
+	errors.Is(err, gorm.ErrDuplicatedKey)
+	if err != nil {
+		return err
+	}
+	err = callback(user)
+	if err == nil {
+		tx.Commit()
+	} else {
+		tx.Rollback()
+	}
+	return err
 }
 
 func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
 	var user models.User
 	result := database.DB.First(&user, "email = ?", email)
-	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil, ErrRecordNotFound
+	err := GetRepositoryErrorByGormError(result.Error)
+	if err != nil {
+		return nil, err
 	}
 	return &user, nil
 }
 
 func (r *UserRepository) GetUserById(id string) (user *models.User, err error) {
 	result := database.DB.First(&user, "id = ?", id)
-	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil, ErrRecordNotFound
+	err = GetRepositoryErrorByGormError(result.Error)
+	if err != nil {
+		return nil, err
 	}
 	return user, nil
 }
@@ -42,12 +60,13 @@ func (r *UserRepository) GetUserById(id string) (user *models.User, err error) {
 func (r *UserRepository) GetAll() ([]models.User, error) {
 	var users []models.User
 	result := database.DB.Find(&users)
-	if result.Error != nil {
-		return nil, result.Error
+	err := GetRepositoryErrorByGormError(result.Error)
+	if err != nil {
+		return nil, err
 	}
 	return users, nil
 }
 
 func (r *UserRepository) DeleteUser(id string) error {
-	return database.DB.Where("id = ?", id).Delete(&models.User{}).Error
+	return GetRepositoryErrorByGormError(database.DB.Where("id = ?", id).Delete(&models.User{}).Error)
 }
