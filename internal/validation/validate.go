@@ -1,7 +1,6 @@
 package validation
 
 import (
-	"Games/internal/validation/error_code"
 	"fmt"
 	"github.com/go-playground/validator/v10"
 )
@@ -14,8 +13,21 @@ type ApiError struct {
 
 type ErrorResponse struct {
 	Parameter string `json:"parameter"`
-	Code      string `json:"code"`
 	Message   string `json:"message"`
+}
+
+func GetErrorResponse(parameter string, tag string) *ErrorResponse {
+	errorResponse := &ErrorResponse{}
+	errorResponse.Parameter = parameter
+	if tag == "required" {
+		errorResponse.Message = fmt.Sprintf("The %s field is required.", parameter)
+	} else if tag == "email" {
+		errorResponse.Message = fmt.Sprintf("The %s field has an incorrect email address.", parameter)
+	} else {
+		errorResponse.Message = fmt.Sprintf("The %s field is incorrect.", parameter)
+	}
+
+	return errorResponse
 }
 
 func ValidateStruct[T any](payload T) []*ErrorResponse {
@@ -23,17 +35,7 @@ func ValidateStruct[T any](payload T) []*ErrorResponse {
 	err := validate.Struct(payload)
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			var element ErrorResponse
-			element.Parameter = err.StructNamespace()
-			element.Code = error_code.INVALID_PARAMETER
-			if err.Tag() == "required" {
-				element.Message = fmt.Sprintf("The %s field is required.", err.StructNamespace())
-			} else if err.Tag() == "email" {
-				element.Message = fmt.Sprintf("The %s field has an incorrect email address.", err.StructNamespace())
-			} else {
-				element.Message = fmt.Sprintf("The %s field is incorrect.", err.StructNamespace())
-			}
-			errors = append(errors, &element)
+			errors = append(errors, GetErrorResponse(err.StructNamespace(), err.Tag()))
 		}
 	}
 	return errors

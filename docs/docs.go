@@ -289,7 +289,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/userDTO.UserResponse"
+                            "$ref": "#/definitions/DTO.DefaultResponse-userDTO_UserResponse"
                         }
                     },
                     "502": {
@@ -337,7 +337,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/userDTO.UserResponse"
+                            "$ref": "#/definitions/DTO.DefaultResponse-userDTO_UserResponse"
                         }
                     },
                     "401": {
@@ -348,6 +348,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "DTO.DefaultResponse-userDTO_UserResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/userDTO.UserResponse"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "userDTO.ForgotPasswordInput": {
             "type": "object",
             "required": [

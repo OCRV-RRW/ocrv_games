@@ -38,11 +38,12 @@ func ParseTemplateDir(dir string) (*template.Template, error) {
 	return template.ParseFiles(paths...)
 }
 
-func SendEmail(user *models.User, data *EmailData, emailTemp string) {
+func SendEmail(user *models.User, data *EmailData, emailTemp string) error {
 	config, err := config.LoadConfig(".")
 
 	if err != nil {
 		log.Fatal("could not load config", err)
+		return err
 	}
 
 	// Sender data.
@@ -74,7 +75,5 @@ func SendEmail(user *models.User, data *EmailData, emailTemp string) {
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
 	// Send Email
-	if err := d.DialAndSend(m); err != nil {
-		log.Fatal("Could not send email: ", err)
-	}
+	return d.DialAndSend(m)
 }

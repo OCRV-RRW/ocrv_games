@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  DTO.DefaultResponse-userDTO_UserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/userDTO.UserResponse'
+      status:
+        type: string
+    type: object
   userDTO.ForgotPasswordInput:
     properties:
       email:
@@ -256,7 +263,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/userDTO.UserResponse'
+            $ref: '#/definitions/DTO.DefaultResponse-userDTO_UserResponse'
         "502":
           description: Bad Gateway
       tags:
@@ -270,7 +277,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/userDTO.UserResponse'
+            $ref: '#/definitions/DTO.DefaultResponse-userDTO_UserResponse'
         "401":
           description: Unauthorized
       tags:

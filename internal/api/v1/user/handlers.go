@@ -1,6 +1,7 @@
 package user
 
 import (
+	"Games/internal/DTO"
 	"Games/internal/DTO/userDTO"
 	"Games/internal/repository"
 	"errors"
@@ -12,12 +13,12 @@ import (
 // @Description	 get current user
 // @Tags         User
 // @Produce		 json
-// @Success		 200 {object}  userDTO.UserResponse
+// @Success		 200 {object}  DTO.DefaultResponse[userDTO.UserResponse]
 // @Failure      401
 // @Router		 /api/v1/users/me [get]
 func GetMe(c *fiber.Ctx) error {
 	user := c.Locals("user").(userDTO.UserResponse)
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "data": fiber.Map{"user": user}})
+	return c.Status(fiber.StatusOK).JSON(DTO.DefaultResponse[userDTO.UserResponse]{Data: user})
 }
 
 // DeleteUser godoc
@@ -44,7 +45,7 @@ func DeleteUser(c *fiber.Ctx) error {
 // @Tags         User
 // @Produce		 json
 // @Param        id   path string true "User ID"
-// @Success		 200 {object}  userDTO.UserResponse
+// @Success		 200 {object} DTO.DefaultResponse[userDTO.UserResponse]
 // @Failure      502
 // @Router		 /api/v1/users/ [get]
 func GetUser(c *fiber.Ctx) error {
