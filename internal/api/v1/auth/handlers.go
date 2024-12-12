@@ -15,6 +15,7 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -63,6 +64,20 @@ func SignUpUser(c *fiber.Ctx) error {
 		VerificationCode: verificationCode,
 	}
 
+	//Send verification code.
+	config, _ := config.LoadConfig(".")
+	err = utils.SendEmail(&newUser, &utils.EmailData{
+		URL:       config.ClientOrigin + "/api/v1/auth/verifyemail/" + verificationCode,
+		FirstName: newUser.Name,
+		Subject:   "Your account verification code",
+	}, "verificationCode.html")
+
+	if err != nil {
+		parametr, _ := reflect.TypeOf(newUser).FieldByName("Email")
+		errors = []*validation.ErrorResponse{validation.GetErrorResponse(parametr.Name, "email")}
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "errors": errors})
+	}
+
 	r := repository.NewUserRepository()
 	err = r.Create(&newUser)
 
@@ -72,14 +87,6 @@ func SignUpUser(c *fiber.Ctx) error {
 	} else if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": err.Error()})
 	}
-
-	//Send verification code.
-	config, _ := config.LoadConfig(".")
-	utils.SendEmail(&newUser, &utils.EmailData{
-		URL:       config.ClientOrigin + "/api/v1/auth/verifyemail/" + verificationCode,
-		FirstName: newUser.Name,
-		Subject:   "Your account verification code",
-	}, "verificationCode.html")
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"status":  "success",
