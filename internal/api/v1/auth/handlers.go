@@ -15,7 +15,6 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
-	"reflect"
 	"strings"
 	"time"
 )
@@ -73,8 +72,8 @@ func SignUpUser(c *fiber.Ctx) error {
 	}, "verificationCode.html")
 
 	if err != nil {
-		parametr, _ := reflect.TypeOf(newUser).FieldByName("Email")
-		errors = []*validation.ErrorResponse{validation.GetErrorResponse(parametr.Name, "email")}
+		param := validation.GetJSONTag(payload, "Email")
+		errors = []*validation.ErrorResponse{validation.GetErrorResponse(param, "email")}
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "errors": errors})
 	}
 
