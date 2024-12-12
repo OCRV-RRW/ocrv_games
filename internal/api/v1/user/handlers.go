@@ -18,7 +18,7 @@ import (
 // @Router		 /api/v1/users/me [get]
 func GetMe(c *fiber.Ctx) error {
 	user := c.Locals("user").(userDTO.UserResponse)
-	return c.Status(fiber.StatusOK).JSON(DTO.DefaultResponse[userDTO.UserResponse]{Data: user})
+	return c.Status(fiber.StatusOK).JSON(DTO.DefaultResponse[interface{}]{Data: fiber.Map{"user": user}, Status: "success"})
 }
 
 // DeleteUser godoc
