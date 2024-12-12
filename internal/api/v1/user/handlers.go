@@ -60,7 +60,7 @@ func GetUser(c *fiber.Ctx) error {
 		if err != nil {
 			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": "couldn't get the user"})
 		}
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "data": userDTO.FilterUserRecord(user)})
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "data": fiber.Map{"user": userDTO.FilterUserRecord(user)}})
 	}
 
 	email := c.Query("email")
