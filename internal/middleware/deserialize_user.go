@@ -6,20 +6,13 @@ import (
 	"Games/internal/database"
 	"Games/internal/repository"
 	"Games/internal/token"
+	"Games/internal/utils"
 	"errors"
 	"github.com/gofiber/fiber/v2"
-	"strings"
 )
 
 func DeserializeUser(c *fiber.Ctx) error {
-	var access_token string
-	authorization := c.Get("Authorization")
-
-	if strings.HasPrefix(authorization, "Bearer ") {
-		access_token = strings.TrimPrefix(authorization, "Bearer ")
-	} else if c.Cookies("access_token") != "" {
-		access_token = c.Cookies("access_token")
-	}
+	access_token := utils.GetToken(c)
 
 	if access_token == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "fail", "message": "You are not logged in"})
