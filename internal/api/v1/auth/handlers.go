@@ -181,6 +181,7 @@ func SignInUser(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: true,
 		Domain:   config.Domen,
+		SameSite: "none",
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -191,6 +192,7 @@ func SignInUser(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: true,
 		Domain:   config.Domen,
+		SameSite: "none",
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -201,6 +203,7 @@ func SignInUser(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: false,
 		Domain:   config.Domen,
+		SameSite: "none",
 	})
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "access_token": accessTokenDetails.Token})
@@ -324,6 +327,7 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: true,
 		Domain:   config.Domen,
+		SameSite: "none",
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -334,6 +338,7 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: false,
 		Domain:   config.Domen,
+		SameSite: "none",
 	})
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "access_token": accessTokenDetails.Token})
