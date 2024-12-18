@@ -6,13 +6,17 @@ import (
 )
 
 type User struct {
-	ID               *uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
-	Name             string     `gorm:"type:varchar(100);not null"`
-	Email            string     `gorm:"type:varchar(100);uniqueIndex;not null"`
-	Password         []byte     `gorm:"type:varchar(100);not null"`
-	VerificationCode string
-	Verified         bool       `gorm:"not null"`
-	CreatedAt        *time.Time `gorm:"not null;default:now()"`
+	ID                 *uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+	Name               string     `gorm:"type:varchar(100);not null"`
+	Email              string     `gorm:"type:varchar(100);uniqueIndex;not null"`
+	Password           []byte     `gorm:"type:varchar(100);not null"`
+	VerificationCode   string     `gorm:"type:varchar(100);not null"`
+	Verified           bool       `gorm:"not null"`
+	Age                int        `gorm:"type:integer"`
+	Gender             string     `gorm:"type:varchar(100);default A"`
+	Grade              int        `gorm:"type:integer"`
+	ContinuousProgress int        `gorm:"type:integer"`
+	CreatedAt          *time.Time `gorm:"not null;default:now()"`
 }
 
 type Game struct {

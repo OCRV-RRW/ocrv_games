@@ -410,6 +410,37 @@
                         "description": "Unauthorized"
                     }
                 }
+            },
+            "patch": {
+                "description": "update user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "parameters": [
+                    {
+                        "description": "UpdateUserInput",
+                        "name": "SignInInput",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/userDTO.UpdateUserInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
             }
         }
     },
@@ -567,14 +598,40 @@
                 }
             }
         },
+        "userDTO.UpdateUserInput": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "grade": {
+                    "type": "integer"
+                }
+            }
+        },
         "userDTO.UserResponse": {
             "type": "object",
             "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "continuous_progress": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
                 "email": {
                     "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "grade": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "string"

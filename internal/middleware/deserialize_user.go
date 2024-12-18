@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"Games/internal/DTO/userDTO"
 	"Games/internal/config"
 	"Games/internal/database"
 	"Games/internal/repository"
@@ -38,7 +37,7 @@ func DeserializeUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": "the user belonging to this token no logger exists"})
 	}
 
-	c.Locals("user", userDTO.FilterUserRecord(user))
+	c.Locals("user", user)
 	c.Locals("access_token_uuid", tokenClaims.TokenUuid)
 
 	return c.Next()

@@ -8,6 +8,7 @@ import (
 func AddRoutes(router fiber.Router) {
 	user := router.Group("/users")
 	user.Get("/me", middleware.DeserializeUser, GetMe)
+	user.Patch("/me", middleware.DeserializeUser, UpdateMe)
 	user.Delete("/:id", middleware.DeserializeUser, DeleteUser)
 	user.Get("/", middleware.DeserializeUser, GetUser)
 }

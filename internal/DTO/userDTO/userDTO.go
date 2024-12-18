@@ -27,10 +27,14 @@ type SignInInput struct {
 }
 
 type UserResponse struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	CreatedAt time.Time `json:"created_at"`
+	ID                 uuid.UUID `json:"id"`
+	Name               string    `json:"name"`
+	Email              string    `json:"email"`
+	Age                int       `json:"age"`
+	Grade              int       `json:"grade"`
+	Gender             string    `json:"gender"`
+	ContinuousProgress string    `json:"continuous_progress"`
+	CreatedAt          time.Time `json:"created_at"`
 }
 
 type UsersResponse struct {
@@ -46,11 +50,20 @@ type ResetPasswordInput struct {
 	PasswordConfirm string `json:"password_confirm" validate:"required"`
 }
 
+type UpdateUserInput struct {
+	Age    int    `json:"age" validate:"number,lt=100,gt=17"`
+	Gender string `json:"gender"`
+	Grade  int    `json:"grade" validate:"number,lt=10,gt=0"`
+}
+
 func FilterUserRecord(user *models.User) UserResponse {
 	return UserResponse{
 		ID:        *user.ID,
 		Name:      user.Name,
 		Email:     user.Email,
+		Age:       user.Age,
+		Gender:    user.Gender,
+		Grade:     user.Grade,
 		CreatedAt: *user.CreatedAt,
 	}
 }

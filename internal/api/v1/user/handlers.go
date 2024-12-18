@@ -3,7 +3,9 @@ package user
 import (
 	"Games/internal/DTO/userDTO"
 	"Games/internal/api"
+	"Games/internal/models"
 	"Games/internal/repository"
+	"Games/internal/validation"
 	"errors"
 	"github.com/gofiber/fiber/v2"
 )
@@ -17,8 +19,9 @@ import (
 // @Failure      401
 // @Router		 /api/v1/users/me [get]
 func GetMe(c *fiber.Ctx) error {
-	user := c.Locals("user").(userDTO.UserResponse)
-	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(userDTO.UserResponseDTO{User: user}, ""))
+	user := c.Locals("user").(*models.User)
+	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
+		userDTO.UserResponseDTO{User: userDTO.FilterUserRecord(user)}, ""))
 }
 
 // DeleteUser godoc
@@ -100,4 +103,55 @@ func GetUser(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(fiber.Map{"users": userRecords}, ""))
+}
+
+// UpdateMe godoc
+//
+// @Description	 update user
+// @Tags         User
+// @Produce		 json
+// @Param       SignInInput		body		userDTO.UpdateUserInput		true   "UpdateUserInput"
+// @Success		 200
+// @Failure      500
+// @Failure      404
+// @Router		 /api/v1/users/me [patch]
+func UpdateMe(c *fiber.Ctx) error {
+	var payload *userDTO.UpdateUserInput
+	user := c.Locals("user").(*models.User)
+
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.UnprocessableEntity, Message: err.Error()},
+		}))
+	}
+
+	userErrors := validation.ValidateStruct(payload)
+	if userErrors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse(userErrors))
+	}
+
+	repo := repository.NewUserRepository()
+
+	if payload.Age != 0 {
+		user.Age = payload.Age
+	}
+	if payload.Grade != 0 {
+		user.Grade = payload.Grade
+	}
+	if payload.Gender == "М" || payload.Gender == "Ж" {
+		user.Gender = payload.Gender
+	}
+	err := repo.Update(user)
+	if err != nil {
+		if errors.Is(err, repository.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.NotFound, Message: "user not found"},
+			}))
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.ServerError, Message: "server error"},
+			}))
+		}
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }

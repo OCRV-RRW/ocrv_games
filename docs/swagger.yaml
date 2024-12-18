@@ -100,12 +100,29 @@ definitions:
       access_token:
         type: string
     type: object
+  userDTO.UpdateUserInput:
+    properties:
+      age:
+        type: integer
+      gender:
+        type: string
+      grade:
+        type: integer
+    type: object
   userDTO.UserResponse:
     properties:
+      age:
+        type: integer
+      continuous_progress:
+        type: string
       created_at:
         type: string
       email:
         type: string
+      gender:
+        type: string
+      grade:
+        type: integer
       id:
         type: string
       name:
@@ -390,6 +407,26 @@ paths:
             $ref: '#/definitions/api.SuccessResponse-userDTO_UserResponseDTO'
         "401":
           description: Unauthorized
+      tags:
+      - User
+    patch:
+      description: update user
+      parameters:
+      - description: UpdateUserInput
+        in: body
+        name: SignInInput
+        required: true
+        schema:
+          $ref: '#/definitions/userDTO.UpdateUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
       tags:
       - User
 swagger: "2.0"
