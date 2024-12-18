@@ -48,22 +48,28 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.Response"
+                        }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     },
                     "401": {
                         "description": "User email is not verified",
                         "schema": {
-                            "type": "nil"
+                            "$ref": "#/definitions/api.ErrorResponse"
                         }
                     },
                     "404": {
-                        "description": "Not Found"
-                    },
-                    "502": {
-                        "description": "Bad Gateway"
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -95,14 +101,20 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/userDTO.TokenResponse"
+                            "$ref": "#/definitions/api.SuccessResponse-userDTO_TokenResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     },
                     "422": {
-                        "description": "Unprocessable Entity"
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -121,13 +133,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.Response"
+                        }
                     },
                     "403": {
-                        "description": "Forbidden"
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     },
-                    "502": {
-                        "description": "Bad Gateway"
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -145,17 +166,26 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/userDTO.TokenResponse"
+                            "$ref": "#/definitions/api.SuccessResponse-userDTO_TokenResponse"
                         }
                     },
                     "403": {
-                        "description": "Forbidden"
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     },
                     "422": {
-                        "description": "Unprocessable Entity"
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     },
-                    "502": {
-                        "description": "Bad Gateway"
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -185,16 +215,34 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/api.SuccessResponse-userDTO_UserResponseDTO"
+                        }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     },
                     "409": {
-                        "description": "Conflict"
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     },
-                    "502": {
-                        "description": "Bad Gateway"
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -231,13 +279,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.Response"
+                        }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     },
-                    "502": {
-                        "description": "Bad Gateway"
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -262,13 +319,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.Response"
+                        }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     },
                     "409": {
-                        "description": "Conflict"
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -295,11 +361,11 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/DTO.DefaultResponse-array_userDTO_UserResponseDTO"
+                            "$ref": "#/definitions/api.SuccessResponse-userDTO_UsersResponse"
                         }
                     },
-                    "502": {
-                        "description": "Bad Gateway"
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             },
@@ -324,8 +390,8 @@ const docTemplate = `{
                     "200": {
                         "description": "OK"
                     },
-                    "502": {
-                        "description": "Bad Gateway"
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             }
@@ -343,7 +409,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/DTO.DefaultResponse-userDTO_UserResponseDTO"
+                            "$ref": "#/definitions/api.SuccessResponse-userDTO_UserResponseDTO"
                         }
                     },
                     "401": {
@@ -354,13 +420,27 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "DTO.DefaultResponse-array_userDTO_UserResponseDTO": {
+        "api.Error": {
             "type": "object",
             "properties": {
-                "data": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "parameter": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/userDTO.UserResponseDTO"
+                        "$ref": "#/definitions/api.Error"
                     }
                 },
                 "status": {
@@ -368,11 +448,53 @@ const docTemplate = `{
                 }
             }
         },
-        "DTO.DefaultResponse-userDTO_UserResponseDTO": {
+        "api.Response": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.SuccessResponse-userDTO_TokenResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/userDTO.TokenResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.SuccessResponse-userDTO_UserResponseDTO": {
             "type": "object",
             "properties": {
                 "data": {
                     "$ref": "#/definitions/userDTO.UserResponseDTO"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.SuccessResponse-userDTO_UsersResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/userDTO.UsersResponse"
+                },
+                "message": {
+                    "type": "string"
                 },
                 "status": {
                     "type": "string"
@@ -393,14 +515,14 @@ const docTemplate = `{
         "userDTO.ResetPasswordInput": {
             "type": "object",
             "required": [
-                "confirm_password",
-                "password"
+                "password",
+                "password_confirm"
             ],
             "properties": {
-                "confirm_password": {
+                "password": {
                     "type": "string"
                 },
-                "password": {
+                "password_confirm": {
                     "type": "string"
                 }
             }
@@ -448,9 +570,6 @@ const docTemplate = `{
             "properties": {
                 "access_token": {
                     "type": "string"
-                },
-                "status": {
-                    "type": "string"
                 }
             }
         },
@@ -476,6 +595,17 @@ const docTemplate = `{
             "properties": {
                 "user": {
                     "$ref": "#/definitions/userDTO.UserResponse"
+                }
+            }
+        },
+        "userDTO.UsersResponse": {
+            "type": "object",
+            "properties": {
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/userDTO.UserResponse"
+                    }
                 }
             }
         }

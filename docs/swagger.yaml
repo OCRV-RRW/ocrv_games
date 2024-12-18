@@ -1,18 +1,54 @@
 basePath: /
 definitions:
-  DTO.DefaultResponse-array_userDTO_UserResponseDTO:
+  api.Error:
     properties:
-      data:
+      code:
+        type: string
+      message:
+        type: string
+      parameter:
+        type: string
+    type: object
+  api.ErrorResponse:
+    properties:
+      error:
         items:
-          $ref: '#/definitions/userDTO.UserResponseDTO'
+          $ref: '#/definitions/api.Error'
         type: array
       status:
         type: string
     type: object
-  DTO.DefaultResponse-userDTO_UserResponseDTO:
+  api.Response:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  api.SuccessResponse-userDTO_TokenResponse:
+    properties:
+      data:
+        $ref: '#/definitions/userDTO.TokenResponse'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  api.SuccessResponse-userDTO_UserResponseDTO:
     properties:
       data:
         $ref: '#/definitions/userDTO.UserResponseDTO'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  api.SuccessResponse-userDTO_UsersResponse:
+    properties:
+      data:
+        $ref: '#/definitions/userDTO.UsersResponse'
+      message:
+        type: string
       status:
         type: string
     type: object
@@ -25,13 +61,13 @@ definitions:
     type: object
   userDTO.ResetPasswordInput:
     properties:
-      confirm_password:
-        type: string
       password:
         type: string
+      password_confirm:
+        type: string
     required:
-    - confirm_password
     - password
+    - password_confirm
     type: object
   userDTO.SignInInput:
     properties:
@@ -63,8 +99,6 @@ definitions:
     properties:
       access_token:
         type: string
-      status:
-        type: string
     type: object
   userDTO.UserResponse:
     properties:
@@ -81,6 +115,13 @@ definitions:
     properties:
       user:
         $ref: '#/definitions/userDTO.UserResponse'
+    type: object
+  userDTO.UsersResponse:
+    properties:
+      users:
+        items:
+          $ref: '#/definitions/userDTO.UserResponse'
+        type: array
     type: object
 host: localhost:8000
 info:
@@ -112,16 +153,20 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/api.Response'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
         "401":
           description: User email is not verified
           schema:
-            type: nil
+            $ref: '#/definitions/api.ErrorResponse'
         "404":
           description: Not Found
-        "502":
-          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
       tags:
       - Auth
   /api/v1/auth/login:
@@ -142,11 +187,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/userDTO.TokenResponse'
+            $ref: '#/definitions/api.SuccessResponse-userDTO_TokenResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
         "422":
           description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
       tags:
       - Auth
   /api/v1/auth/logout:
@@ -159,10 +208,16 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/api.Response'
         "403":
           description: Forbidden
-        "502":
-          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
       tags:
       - Auth
   /api/v1/auth/refresh:
@@ -174,13 +229,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/userDTO.TokenResponse'
+            $ref: '#/definitions/api.SuccessResponse-userDTO_TokenResponse'
         "403":
           description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
         "422":
           description: Unprocessable Entity
-        "502":
-          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
       tags:
       - Auth
   /api/v1/auth/register:
@@ -200,12 +261,24 @@ paths:
       responses:
         "201":
           description: Created
+          schema:
+            $ref: '#/definitions/api.SuccessResponse-userDTO_UserResponseDTO'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
         "409":
           description: Conflict
-        "502":
-          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
       tags:
       - Auth
   /api/v1/auth/reset-password:
@@ -230,10 +303,16 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/api.Response'
         "400":
           description: Bad Request
-        "502":
-          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
       tags:
       - Auth
   /api/v1/auth/verify-email:
@@ -250,10 +329,16 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/api.Response'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
         "409":
           description: Conflict
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
       tags:
       - Auth
   /api/v1/users/:
@@ -270,8 +355,8 @@ paths:
       responses:
         "200":
           description: OK
-        "502":
-          description: Bad Gateway
+        "500":
+          description: Internal Server Error
       tags:
       - User
     get:
@@ -288,9 +373,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/DTO.DefaultResponse-array_userDTO_UserResponseDTO'
-        "502":
-          description: Bad Gateway
+            $ref: '#/definitions/api.SuccessResponse-userDTO_UsersResponse'
+        "500":
+          description: Internal Server Error
       tags:
       - User
   /api/v1/users/me:
@@ -302,7 +387,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/DTO.DefaultResponse-userDTO_UserResponseDTO'
+            $ref: '#/definitions/api.SuccessResponse-userDTO_UserResponseDTO'
         "401":
           description: Unauthorized
       tags:

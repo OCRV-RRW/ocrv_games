@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"Games/internal/api"
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"reflect"
@@ -8,17 +9,8 @@ import (
 
 var validate = validator.New()
 
-type ApiError struct {
-	Errors []*ErrorResponse `json:"errors"`
-}
-
-type ErrorResponse struct {
-	Parameter string `json:"parameter"`
-	Message   string `json:"message"`
-}
-
-func GetErrorResponse(parameter string, tag string) *ErrorResponse {
-	errorResponse := &ErrorResponse{}
+func GetErrorResponse(parameter string, tag string) *api.Error {
+	errorResponse := &api.Error{}
 	errorResponse.Parameter = parameter
 	if tag == "required" {
 		errorResponse.Message = fmt.Sprintf("The %s field is required.", parameter)
@@ -27,12 +19,13 @@ func GetErrorResponse(parameter string, tag string) *ErrorResponse {
 	} else {
 		errorResponse.Message = fmt.Sprintf("The %s field is incorrect.", parameter)
 	}
+	errorResponse.Code = api.IncorrectParameter
 
 	return errorResponse
 }
 
-func ValidateStruct[T any](payload T) []*ErrorResponse {
-	var errors []*ErrorResponse
+func ValidateStruct[T any](payload T) []*api.Error {
+	var errors []*api.Error
 	err := validate.Struct(payload)
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {

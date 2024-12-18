@@ -2,6 +2,7 @@ package auth
 
 import (
 	"Games/internal/DTO/userDTO"
+	"Games/internal/api"
 	"Games/internal/config"
 	"Games/internal/database"
 	"Games/internal/models"
@@ -26,25 +27,31 @@ import (
 // @Accept		 json
 // @Produce		 json
 // @Param        SignUpInput		body		userDTO.SignUpInput		true   "SignUpInput"
-// @Success		 201
-// @Failure      400
-// @Failure      409
-// @Failure      502
+// @Success		 201 {object} api.SuccessResponse[userDTO.UserResponseDTO]
+// @Failure      400 {object} api.ErrorResponse
+// @Failure      409 {object} api.ErrorResponse
+// @Failure      500 {object} api.ErrorResponse
+// @Failure      422 {object} api.ErrorResponse
 // @Router		 /api/v1/auth/register [post]
 func SignUpUser(c *fiber.Ctx) error {
 	var payload *userDTO.SignUpInput
 
 	if err := c.BodyParser(&payload); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.UnprocessableEntity, Message: err.Error()},
+		}))
 	}
 
 	userErrors := validation.ValidateStruct(payload)
 	if userErrors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "errors": userErrors})
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse(userErrors))
 	}
 
 	if payload.Password != payload.PasswordConfirm {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "passwords do not match"})
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.IncorrectParameter, Parameter: "password", Message: "password and confirm password don't match"},
+			{Code: api.IncorrectParameter, Parameter: "confirm_password", Message: "password and confirm password don't match"},
+		}))
 	}
 
 	hashedPassword, err := utils.HashPassword(payload.Password)
@@ -66,9 +73,9 @@ func SignUpUser(c *fiber.Ctx) error {
 	r := repository.NewUserRepository()
 	_, err = r.GetByEmail(newUser.Email)
 	if err == nil {
-		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-			"status":  "fail",
-			"message": "User with that email already exists"})
+		return c.Status(fiber.StatusConflict).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.EmailAlreadyExists, Message: "email already exists"},
+		}))
 	}
 
 	sendEmailError := errors.New("Something went wrong on sending email")
@@ -89,19 +96,21 @@ func SignUpUser(c *fiber.Ctx) error {
 
 	if errors.Is(err, sendEmailError) {
 		param := validation.GetJSONTag(payload, "Email")
-		userErrors = []*validation.ErrorResponse{validation.GetErrorResponse(param, "email")}
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "errors": userErrors})
+		userErrors = []*api.Error{validation.GetErrorResponse(param, "email")}
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse(userErrors))
 	} else if errors.Is(err, repository.ErrDuplicatedKey) {
-		return c.Status(fiber.StatusConflict).JSON(
-			fiber.Map{"status": "fail", "message": "User with that email already exists"})
+		return c.Status(fiber.StatusConflict).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.EmailAlreadyExists, Message: "email already exists"},
+		}))
 	} else if err != nil {
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: err.Error()},
+		}))
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"status":  "success",
-		"message": "We sent an email with a verification code to " + newUser.Email,
-		"data":    fiber.Map{"user": userDTO.FilterUserRecord(&newUser)}})
+	return c.Status(fiber.StatusCreated).JSON(api.NewSuccessResponse(
+		userDTO.UserResponseDTO{userDTO.FilterUserRecord(&newUser)},
+		"We sent an email with a verification code to "+newUser.Email))
 }
 
 // SignInUser godoc
@@ -111,48 +120,61 @@ func SignUpUser(c *fiber.Ctx) error {
 // @Accept      json
 // @Param       SignInInput		body		userDTO.SignInInput		true   "SignInInput"
 // @Produce		json
-// @Success		200 {object} userDTO.TokenResponse
-// @Failure     400
-// @Failure     422
+// @Success		200 {object} api.SuccessResponse[userDTO.TokenResponse]
+// @Failure     400 {object} api.ErrorResponse
+// @Failure     422 {object} api.ErrorResponse
 // @Router	    /api/v1/auth/login [post]
 func SignInUser(c *fiber.Ctx) error {
 	var payload *userDTO.SignInInput
 
 	if err := c.BodyParser(&payload); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.UnprocessableEntity, Message: err.Error()},
+		}))
 	}
 
-	errors := validation.ValidateStruct(payload)
-	if errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "errors": errors})
+	userErrors := validation.ValidateStruct(payload)
+	if userErrors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse(userErrors))
 	}
 
 	var user models.User
 	result := database.DB.First(&user, "email = ?", strings.ToLower(payload.Email))
 
 	if result.Error != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Invalid email or password"})
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.InvalidEmailOrPassword, Message: "invalid email or password"},
+		}))
 	}
 
 	err := utils.VerifyPassword(user.Password, payload.Password)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Invalid email or password"})
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.InvalidEmailOrPassword, Message: "invalid email or password"},
+		}))
 	}
 
 	if !user.Verified {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Please verify your email"})
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.InvalidEmailOrPassword, Message: "invalid email or password"},
+		}))
 	}
 
 	config, _ := config.LoadConfig(".")
 	accessTokenDetails, err := token.CreateToken(user.ID.String(), config.AccessTokenExpiresIn, config.AccessTokenPrivateKey)
 	if err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: ""},
+		}))
 	}
 
 	refreshTokenDetails, err := token.CreateToken(user.ID.String(), config.RefreshTokenExpiresIn, config.RefreshTokenPrivateKey)
 	if err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: ""},
+		}))
 	}
+
 	tokenRepo := token.NewAuthTokenRepository(database.RedisClient)
 	now := time.Now()
 	errAccess := tokenRepo.SaveToken(
@@ -161,7 +183,9 @@ func SignInUser(c *fiber.Ctx) error {
 		time.Unix(*accessTokenDetails.ExpiresIn, 0).Sub(now))
 
 	if errAccess != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"status": "fail", "message": errAccess.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: ""},
+		}))
 	}
 
 	errRefresh := tokenRepo.SaveToken(
@@ -170,7 +194,9 @@ func SignInUser(c *fiber.Ctx) error {
 		time.Unix(*refreshTokenDetails.ExpiresIn, 0).Sub(now))
 
 	if errRefresh != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"status": "fail", "message": errRefresh.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: ""},
+		}))
 	}
 
 	c.Cookie(&fiber.Cookie{
@@ -206,7 +232,9 @@ func SignInUser(c *fiber.Ctx) error {
 		SameSite: "none",
 	})
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "access_token": accessTokenDetails.Token})
+	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
+		fiber.Map{"access_token": accessTokenDetails.Token},
+		"success authorize"))
 }
 
 // LogoutUser godoc
@@ -215,9 +243,9 @@ func SignInUser(c *fiber.Ctx) error {
 // @Tags         Auth
 // @Accept		json
 // @Produce		json
-// @Success	    200
-// @Failure     403
-// @Failure     502
+// @Success	    200 {object} api.Response
+// @Failure     403 {object} api.ErrorResponse
+// @Failure     500 {object} api.ErrorResponse
 // @Router		/api/v1/auth/logout [get]
 func LogoutUser(c *fiber.Ctx) error {
 	message := "Token is invalid or session has expired"
@@ -225,38 +253,47 @@ func LogoutUser(c *fiber.Ctx) error {
 	refresh_token := c.Cookies("refresh_token")
 
 	if refresh_token == "" {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": message})
+		return c.Status(fiber.StatusForbidden).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.Forbidden, Message: message},
+		}))
 	}
 
 	config, _ := config.LoadConfig(".")
 
 	tokenClaims, err := token.ValidateToken(refresh_token, config.RefreshTokenPublicKey)
 	if err != nil {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusForbidden).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.Forbidden, Message: message},
+		}))
 	}
 
 	accessTokenUuid := c.Locals("access_token_uuid").(string)
 	tokenRepo := token.NewAuthTokenRepository(database.RedisClient)
 	err = tokenRepo.RemoveTokenByTokenUuid(accessTokenUuid, tokenClaims.TokenUuid)
 	if err != nil {
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError},
+		}))
 	}
 
 	expired := time.Now().Add(-time.Hour * 24)
 	c.Cookie(&fiber.Cookie{
-		Name:    "access_token",
-		Value:   "",
-		Expires: expired,
+		Name:     "access_token",
+		Value:    "",
+		Expires:  expired,
+		SameSite: "none",
 	})
 	c.Cookie(&fiber.Cookie{
-		Name:    "refresh_token",
-		Value:   "",
-		Expires: expired,
+		Name:     "refresh_token",
+		Value:    "",
+		Expires:  expired,
+		SameSite: "none",
 	})
 	c.Cookie(&fiber.Cookie{
-		Name:    "logged_in",
-		Value:   "",
-		Expires: expired,
+		Name:     "logged_in",
+		Value:    "",
+		Expires:  expired,
+		SameSite: "none",
 	})
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }
@@ -266,10 +303,10 @@ func LogoutUser(c *fiber.Ctx) error {
 // @Description	refresh access token
 // @Tags         Auth
 // @Accept		json
-// @Success	    200 {object} userDTO.TokenResponse
-// @Failure     403
-// @Failure     502
-// @Failure     422
+// @Success	    200 {object} api.SuccessResponse[userDTO.TokenResponse]
+// @Failure     403 {object} api.ErrorResponse
+// @Failure     500 {object} api.ErrorResponse
+// @Failure     422 {object} api.ErrorResponse
 // @Router		/api/v1/auth/refresh [post]
 func RefreshAccessToken(c *fiber.Ctx) error {
 	message := "could not refresh access token"
@@ -277,19 +314,25 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 	refresh_token := c.Cookies("refresh_token")
 
 	if refresh_token == "" {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": message})
+		return c.Status(fiber.StatusForbidden).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.Forbidden, Message: message},
+		}))
 	}
 	config, _ := config.LoadConfig(".")
 
 	// Validate refresh token, and search token in redis
 	tokenClaims, err := token.ValidateToken(refresh_token, config.RefreshTokenPublicKey)
 	if err != nil {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusForbidden).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.Forbidden, Message: message},
+		}))
 	}
 	tokenRepo := token.NewAuthTokenRepository(database.RedisClient)
 	userid, err := tokenRepo.GetUserIdByTokenUuid(tokenClaims.TokenUuid)
 	if errors.Is(err, redis.Nil) || userid == "" {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": message})
+		return c.Status(fiber.StatusForbidden).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.Forbidden, Message: message},
+		}))
 	}
 
 	var user models.User
@@ -297,11 +340,13 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"status":  "fail",
-				"message": "the user belonging to this token no logger exists"})
+			return c.Status(fiber.StatusForbidden).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.Forbidden, Message: "the user belonging to this token no logger exists"},
+			}))
 		} else {
-			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+			return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.ServerError, Message: err.Error()},
+			}))
 		}
 	}
 
@@ -309,14 +354,18 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 	now := time.Now()
 	accessTokenDetails, err := token.CreateToken(user.ID.String(), config.AccessTokenExpiresIn, config.AccessTokenPrivateKey)
 	if err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: err.Error()},
+		}))
 	}
 	errAccess := tokenRepo.SaveToken(
 		user.ID.String(),
 		accessTokenDetails,
 		time.Unix(*accessTokenDetails.ExpiresIn, 0).Sub(now))
 	if errAccess != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"status": "fail", "message": errAccess.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: err.Error()},
+		}))
 	}
 
 	c.Cookie(&fiber.Cookie{
@@ -340,8 +389,9 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 		Domain:   config.Domen,
 		SameSite: "none",
 	})
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "access_token": accessTokenDetails.Token})
+	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
+		fiber.Map{"access_token": accessTokenDetails.Token},
+		"success refresh token"))
 }
 
 // VerifyEmail godoc
@@ -350,9 +400,9 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 // @Tags         Auth
 // @Produce      json
 // @Param        verify_code   path string true "Verification code"
-// @Success		 200
-// @Failure      400
-// @Failure      409
+// @Success		 200 {object} api.Response
+// @Failure      400 {object} api.ErrorResponse
+// @Failure      409 {object} api.ErrorResponse
 // @Router		 /api/v1/auth/verify-email [post]
 func VerifyEmail(c *fiber.Ctx) error {
 	verificationCode := c.Params("verificationCode")
@@ -360,11 +410,15 @@ func VerifyEmail(c *fiber.Ctx) error {
 	var updatedUser models.User
 	result := database.DB.First(&updatedUser, "verification_code = ?", verificationCode)
 	if result.Error != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Invalid verification code or user doesn't exists"})
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.InvalidVerificationCode, Message: "Invalid verification code or user doesn't exists"},
+		}))
 	}
 
 	if updatedUser.Verified {
-		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"status": "fail", "message": "User already verified"})
+		return c.Status(fiber.StatusConflict).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.InvalidVerificationCode, Message: "email already verified"},
+		}))
 	}
 
 	updatedUser.VerificationCode = ""
@@ -381,32 +435,39 @@ func VerifyEmail(c *fiber.Ctx) error {
 // @Accept		 json
 // @Produce      json
 // @Param        ForgotPasswordInput		body		userDTO.ForgotPasswordInput		true   "ForgotPasswordInput"
-// @Success		 200
-// @Failure      400
-// @Failure      401 nil nil  "User email is not verified"
-// @Failure      404
-// @Failure      502
+// @Success		 200 {object} api.Response
+// @Failure      400 {object} api.ErrorResponse
+// @Failure      401 {object} api.ErrorResponse  "User email is not verified"
+// @Failure      404 {object} api.ErrorResponse
 // @Router		 /api/v1/auth/forgot-password [post]
 func ForgotPassword(c *fiber.Ctx) error {
 	repo := repository.NewUserRepository()
 	var payload userDTO.ForgotPasswordInput
 
 	repository.NewUserRepository()
+
 	if err := c.BodyParser(&payload); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.UnprocessableEntity, Message: err.Error()},
+		}))
 	}
 
-	errors := validation.ValidateStruct(payload)
-	if errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "errors": errors})
+	userErrors := validation.ValidateStruct(payload)
+	if userErrors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse(userErrors))
 	}
+
 	user, err := repo.GetByEmail(payload.Email)
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "fail", "message": "Invalid email"})
+		return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.IncorrectParameter, Parameter: "email", Message: "invalid email"},
+		}))
 	}
 
 	if !user.Verified {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "fail", "message": "Account not verified"})
+		return c.Status(fiber.StatusUnauthorized).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.Unauthorized, Message: "unauthorized"},
+		}))
 	}
 
 	config, _ := config.LoadConfig(".")
@@ -435,27 +496,30 @@ func ForgotPassword(c *fiber.Ctx) error {
 // @Produce		 json
 // @Param        reset_code   path string true "reset code"
 // @Param        ResetPasswordInput		body		userDTO.ResetPasswordInput		true   "ResetPasswordInput"
-// @Success		 200
-// @Failure      400
-// @Failure      502
+// @Success		 200 {object} api.Response
+// @Failure      400 {object} api.ErrorResponse
+// @Failure      500 {object} api.ErrorResponse
 // @Router		 /api/v1/auth/reset-password [patch]
 func ResetPassword(c *fiber.Ctx) error {
-	message := "could not reset password."
 	var payload *userDTO.ResetPasswordInput
 	resetToken := c.Params("resetToken")
 
 	userRepo := repository.NewUserRepository()
 	if err := c.BodyParser(&payload); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.UnprocessableEntity, Message: err.Error()},
+		}))
 	}
-
 	userErrors := validation.ValidateStruct(payload)
 	if userErrors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "userErrors": userErrors})
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse(userErrors))
 	}
 
-	if payload.Password != payload.ConfirmPassword {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Passwords do not match"})
+	if payload.Password != payload.PasswordConfirm {
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.IncorrectParameter, Parameter: "password", Message: "password and password_confirm do not match"},
+			{Code: api.IncorrectParameter, Parameter: "password_confirm", Message: "password and password_confirm do not match"},
+		}))
 	}
 
 	tokenRepo := token.NewAuthTokenRepository(database.RedisClient)
@@ -463,11 +527,15 @@ func ResetPassword(c *fiber.Ctx) error {
 	ctx := context.TODO()
 	userid, err := database.RedisClient.Get(ctx, resetToken).Result()
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "The reset token is invalid or has expired"})
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.TokenInvalidOrExpired, Message: "The reset token is invalid or has expired"},
+		}))
 	}
 	user, err := userRepo.GetUserById(userid)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": message})
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.NotFound},
+		}))
 	}
 
 	hashedPassword, _ := utils.HashPassword(payload.Password)
@@ -475,12 +543,16 @@ func ResetPassword(c *fiber.Ctx) error {
 	user.Password = hashedPassword
 	err = userRepo.Update(user)
 	if err != nil {
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": message})
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError},
+		}))
 	}
 
 	_, err = database.RedisClient.Del(ctx, resetToken).Result()
 	if err != nil {
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError},
+		}))
 	}
 
 	err = tokenRepo.RemoveAllUserToken(user.ID.String())

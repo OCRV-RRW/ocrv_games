@@ -8,7 +8,6 @@ import (
 
 type TokenResponse struct {
 	AccessToken string `json:"access_token"`
-	Status      string `json:"status"`
 }
 
 type UserResponseDTO struct {
@@ -34,13 +33,17 @@ type UserResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type UsersResponse struct {
+	Users []UserResponse `json:"users"`
+}
+
 type ForgotPasswordInput struct {
 	Email string `json:"email" validate:"required,email"`
 }
 
 type ResetPasswordInput struct {
 	Password        string `json:"password" validate:"required"`
-	ConfirmPassword string `json:"confirm_password" validate:"required"`
+	PasswordConfirm string `json:"password_confirm" validate:"required"`
 }
 
 func FilterUserRecord(user *models.User) UserResponse {

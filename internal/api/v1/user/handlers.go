@@ -1,8 +1,8 @@
 package user
 
 import (
-	"Games/internal/DTO"
 	"Games/internal/DTO/userDTO"
+	"Games/internal/api"
 	"Games/internal/repository"
 	"errors"
 	"github.com/gofiber/fiber/v2"
@@ -13,15 +13,12 @@ import (
 // @Description	 get current user
 // @Tags         User
 // @Produce		 json
-// @Success		 200 {object}  DTO.DefaultResponse[userDTO.UserResponseDTO]
+// @Success		 200 {object}  api.SuccessResponse[userDTO.UserResponseDTO]
 // @Failure      401
 // @Router		 /api/v1/users/me [get]
 func GetMe(c *fiber.Ctx) error {
 	user := c.Locals("user").(userDTO.UserResponse)
-	return c.Status(fiber.StatusOK).JSON(DTO.DefaultResponse[userDTO.UserResponseDTO]{
-		Data:   userDTO.UserResponseDTO{User: user},
-		Status: "success",
-	})
+	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(userDTO.UserResponseDTO{User: user}, ""))
 }
 
 // DeleteUser godoc
@@ -31,13 +28,15 @@ func GetMe(c *fiber.Ctx) error {
 // @Produce		 json
 // @Param        id   path string true "User ID"
 // @Success		 200
-// @Failure      502
+// @Failure      500
 // @Router		 /api/v1/users/ [delete]
 func DeleteUser(c *fiber.Ctx) error {
 	r := repository.NewUserRepository()
 	err := r.DeleteUser(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": "couldn't delete the user"})
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: err.Error()},
+		}))
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }
@@ -48,8 +47,8 @@ func DeleteUser(c *fiber.Ctx) error {
 // @Tags         User
 // @Produce		 json
 // @Param        id   path string true "User ID"
-// @Success		 200 {object} DTO.DefaultResponse[[]userDTO.UserResponseDTO]
-// @Failure      502
+// @Success		 200 {object} api.SuccessResponse[userDTO.UsersResponse]
+// @Failure      500
 // @Router		 /api/v1/users/ [get]
 func GetUser(c *fiber.Ctx) error {
 	repo := repository.NewUserRepository()
@@ -58,29 +57,41 @@ func GetUser(c *fiber.Ctx) error {
 	if id != "" {
 		user, err := repo.GetUserById(id)
 		if errors.Is(err, repository.ErrRecordNotFound) {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "fail", "message": "user not found"})
+			return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.NotFound, Message: "user not found"},
+			}))
 		}
 		if err != nil {
-			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": "couldn't get the user"})
+			return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.ServerError, Message: "couldn't get user"},
+			}))
 		}
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "data": fiber.Map{"user": userDTO.FilterUserRecord(user)}})
+		return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(fiber.Map{
+			"users": []userDTO.UserResponse{userDTO.FilterUserRecord(user)}}, ""))
 	}
 
 	email := c.Query("email")
 	if email != "" {
 		user, err := repo.GetByEmail(email)
 		if errors.Is(err, repository.ErrRecordNotFound) {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "fail", "message": "user not found"})
+			return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.NotFound, Message: "user not found"},
+			}))
 		}
 		if err != nil {
-			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": "couldn't get the user"})
+			return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.ServerError, Message: "couldn't get user"},
+			}))
 		}
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "data": userDTO.FilterUserRecord(user)})
+		return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(fiber.Map{
+			"users": []userDTO.UserResponse{userDTO.FilterUserRecord(user)}}, ""))
 	}
 
 	users, err := repo.GetAll()
 	if err != nil {
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail"})
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: "couldn't get user"},
+		}))
 	}
 
 	var userRecords = make([]userDTO.UserResponseDTO, len(users))
@@ -88,5 +99,5 @@ func GetUser(c *fiber.Ctx) error {
 		userRecords[i].User = userDTO.FilterUserRecord(&users[i])
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "data": userRecords})
+	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(fiber.Map{"users": userRecords}, ""))
 }
