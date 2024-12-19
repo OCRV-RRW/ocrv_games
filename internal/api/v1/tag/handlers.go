@@ -1,7 +1,7 @@
 package tag
 
 import (
-	"Games/internal/DTO/tagDTO"
+	"Games/internal/DTO/skillDTO"
 	"Games/internal/database"
 	"Games/internal/models"
 	"Games/internal/validation"
@@ -10,7 +10,7 @@ import (
 )
 
 func CreateTag(c *fiber.Ctx) error {
-	var payload *tagDTO.CreateTagInput
+	var payload *skillDTO.CreateSkillInput
 
 	if err := c.BodyParser(&payload); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "error": err})
@@ -21,13 +21,13 @@ func CreateTag(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "error": errors})
 	}
 
-	newTag := models.Tag{
+	newTag := models.Skill{
 		Name: payload.Name,
 	}
 
 	result := database.DB.Create(&newTag)
 	if result.Error != nil && strings.Contains(result.Error.Error(), "duplicate key value violates unique") {
-		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"status": "fail", "error": "Tag with that name already exists"})
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"status": "fail", "error": "Skill with that name already exists"})
 	} else if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "fail", "error": result.Error.Error()})
 	}
@@ -36,14 +36,14 @@ func CreateTag(c *fiber.Ctx) error {
 }
 
 func GetTags(c *fiber.Ctx) error {
-	var tags []models.Tag
-	err := database.DB.Model(&models.Tag{}).Preload("Games").Find(&tags).Error
+	var tags []models.Skill
+	err := database.DB.Model(&models.Skill{}).Preload("Games").Find(&tags).Error
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "fail", "error": err})
 	}
-	var tagResponse []tagDTO.TagOnlyResponse
+	var tagResponse []skillDTO.SkillOnlyResponse
 	for _, tag := range tags {
-		tagResponse = append(tagResponse, tagDTO.FilterTagRecordToResponseOnly(&tag))
+		tagResponse = append(tagResponse, skillDTO.FilterTagRecordToResponseOnly(&tag))
 	}
 
 	return c.Status(fiber.StatusOK).JSON(tagResponse)

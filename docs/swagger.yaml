@@ -25,6 +25,15 @@ definitions:
       status:
         type: string
     type: object
+  api.SuccessResponse-gameDTO_GamesResponse:
+    properties:
+      data:
+        $ref: '#/definitions/gameDTO.GamesResponse'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
   api.SuccessResponse-userDTO_TokenResponse:
     properties:
       data:
@@ -51,6 +60,33 @@ definitions:
         type: string
       status:
         type: string
+    type: object
+  gameDTO.GameResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      skills:
+        items:
+          $ref: '#/definitions/skillDTO.SkillOnlyResponse'
+        type: array
+    type: object
+  gameDTO.GamesResponse:
+    properties:
+      games:
+        items:
+          $ref: '#/definitions/gameDTO.GameResponse'
+        type: array
+    type: object
+  skillDTO.SkillOnlyResponse:
+    properties:
+      name:
+        type: string
+    required:
+    - name
     type: object
   userDTO.ForgotPasswordInput:
     properties:
@@ -140,17 +176,17 @@ definitions:
           $ref: '#/definitions/userDTO.UserResponse'
         type: array
     type: object
-host: localhost:8000
+host: https://ocrv-game
 info:
   contact:
     email: fiber@swagger.io
     name: API Support
-  description: This is a sample swagger for Fiber
+  description: This is game platform swagger
   license:
     name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
+    url: h
   termsOfService: http://swagger.io/terms/
-  title: Fiber Example API
+  title: GamePlatform API
   version: "1.0"
 paths:
   /api/v1/auth/forgot-password:
@@ -358,6 +394,77 @@ paths:
             $ref: '#/definitions/api.ErrorResponse'
       tags:
       - Auth
+  /api/v1/games/:
+    delete:
+      description: delete game by id
+      parameters:
+      - description: Game name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      tags:
+      - Game
+    get:
+      description: get games
+      parameters:
+      - description: string name
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse-gameDTO_GamesResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      tags:
+      - Game
+    post:
+      consumes:
+      - application/json
+      description: create game
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      tags:
+      - Game
   /api/v1/users/:
     delete:
       description: delete user by id
@@ -379,10 +486,9 @@ paths:
     get:
       description: get user by id
       parameters:
-      - description: User ID
-        in: path
+      - description: user id
+        in: query
         name: id
-        required: true
         type: string
       produces:
       - application/json

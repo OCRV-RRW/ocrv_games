@@ -15,15 +15,16 @@ import (
 	"log"
 )
 
-// @title Fiber Example API
+// @title GamePlatform API
 // @version 1.0
-// @description This is a sample swagger for Fiber
+// @description This is game platform swagger
 // @termsOfService http://swagger.io/terms/
 // @contact.name API Support
 // @contact.email fiber@swagger.io
 // @license.name Apache 2.0
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @host localhost:8000
+// @license.url h
+// ttp://www.apache.org/licenses/LICENSE-2.0.html
+// @host https://ocrv-game
 // @BasePath /
 func main() {
 	conf, err := config.LoadConfig(".")
@@ -39,7 +40,7 @@ func main() {
 	app.Use(cors.New(cors.Config{
 		AllowHeaders: "Origin,Content-Type,Accept,Content-Length,Accept-Language," +
 			"Accept-Encoding,Connection,Access-Control-Allow-Origin,Authorization",
-		AllowOrigins:     "http://localhost:3000",
+		AllowOrigins:     "http://localhost:3000,http://localhost:8000",
 		AllowCredentials: true,
 		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
 	}))

@@ -37,9 +37,15 @@ func DeleteUser(c *fiber.Ctx) error {
 	r := repository.NewUserRepository()
 	err := r.DeleteUser(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
-			{Code: api.ServerError, Message: err.Error()},
-		}))
+		if errors.Is(err, repository.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.NotFound, Message: "not found user"},
+			}))
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.ServerError, Message: err.Error()},
+			}))
+		}
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }
@@ -49,7 +55,7 @@ func DeleteUser(c *fiber.Ctx) error {
 // @Description	 get user by id
 // @Tags         User
 // @Produce		 json
-// @Param        id   path string true "User ID"
+// @Param        id  query     string     false  "user id"
 // @Success		 200 {object} api.SuccessResponse[userDTO.UsersResponse]
 // @Failure      500
 // @Router		 /api/v1/users/ [get]
@@ -59,16 +65,18 @@ func GetUser(c *fiber.Ctx) error {
 	id := c.Query("id")
 	if id != "" {
 		user, err := repo.GetUserById(id)
-		if errors.Is(err, repository.ErrRecordNotFound) {
-			return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
-				{Code: api.NotFound, Message: "user not found"},
-			}))
-		}
 		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
-				{Code: api.ServerError, Message: "couldn't get user"},
-			}))
+			if errors.Is(err, repository.ErrRecordNotFound) {
+				return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
+					{Code: api.NotFound, Message: "user not found"},
+				}))
+			} else {
+				return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+					{Code: api.ServerError, Message: "couldn't get user"},
+				}))
+			}
 		}
+
 		return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(fiber.Map{
 			"users": []userDTO.UserResponse{userDTO.FilterUserRecord(user)}}, ""))
 	}

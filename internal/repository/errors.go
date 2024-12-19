@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"gorm.io/gorm"
+	"strings"
 )
 
 var (
@@ -22,6 +23,9 @@ func GetRepositoryErrorByGormError(err error) error {
 	} else if GormToRepositoryError[err] != nil {
 		return GormToRepositoryError[err]
 	} else {
+		if strings.Contains(err.Error(), "duplicate key value violates unique") {
+			return ErrDuplicatedKey
+		}
 		return Error
 	}
 }

@@ -23,7 +23,7 @@ import (
 // SignUpUser godoc
 //
 // @Description	 sign up user
-// @Tags         Auth
+// @Tags       Auth
 // @Accept		 json
 // @Produce		 json
 // @Param        SignUpInput		body		userDTO.SignUpInput		true   "SignUpInput"
@@ -71,12 +71,6 @@ func SignUpUser(c *fiber.Ctx) error {
 	}
 
 	r := repository.NewUserRepository()
-	_, err = r.GetByEmail(newUser.Email)
-	if err == nil {
-		return c.Status(fiber.StatusConflict).JSON(api.NewErrorResponse([]*api.Error{
-			{Code: api.EmailAlreadyExists, Message: "email already exists"},
-		}))
-	}
 
 	sendEmailError := errors.New("Something went wrong on sending email")
 
@@ -116,7 +110,7 @@ func SignUpUser(c *fiber.Ctx) error {
 // SignInUser godoc
 //
 // @Description	sign in user
-// @Tags         Auth
+// @Tags        Auth
 // @Accept      json
 // @Param       SignInInput		body		userDTO.SignInInput		true   "SignInInput"
 // @Produce		json
@@ -251,7 +245,6 @@ func LogoutUser(c *fiber.Ctx) error {
 	message := "Token is invalid or session has expired"
 
 	refresh_token := c.Cookies("refresh_token")
-
 	if refresh_token == "" {
 		return c.Status(fiber.StatusForbidden).JSON(api.NewErrorResponse([]*api.Error{
 			{Code: api.Forbidden, Message: message},
@@ -301,7 +294,7 @@ func LogoutUser(c *fiber.Ctx) error {
 // RefreshAccessToken godoc
 //
 // @Description	refresh access token
-// @Tags         Auth
+// @Tags        Auth
 // @Accept		json
 // @Success	    200 {object} api.SuccessResponse[userDTO.TokenResponse]
 // @Failure     403 {object} api.ErrorResponse
