@@ -21,13 +21,14 @@ type User struct {
 
 type Game struct {
 	Name        string     `gorm:"type:varchar(100);primary_key; not null;"`
+	Source      string     `gorm:"type:varchar(100);not null"`
 	Description string     `gorm:"type:varchar(1000);"`
-	Skills      []*Skill   `gorm:"many2many:skill_game;"`
+	Skills      []*Skill   `gorm:"many2many:skill_game;constraint:OnDelete:CASCADE;"`
 	CreatedAt   *time.Time `gorm:"not null;default:now()"`
 }
 
 type Skill struct {
 	Name      string     `gorm:"type:text;primary_key"`
-	Games     []*Game    `gorm:"many2many:skill_game;"`
+	Games     []*Game    `gorm:"many2many:skill_game;constraint:OnDelete:CASCADE;"`
 	CreatedAt *time.Time `gorm:"not null;default:now()"`
 }

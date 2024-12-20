@@ -3,7 +3,7 @@ package main
 import (
 	"Games/internal/api/v1/auth"
 	"Games/internal/api/v1/game"
-	"Games/internal/api/v1/tag"
+	"Games/internal/api/v1/skill"
 	"Games/internal/api/v1/user"
 	"Games/internal/config"
 	"Games/internal/database"
@@ -57,8 +57,8 @@ func main() {
 	app.Use(logger.New())
 
 	micro.Route("/", auth.AddRoutes)
-	micro.Route("/game", game.AddRoutes)
-	micro.Route("/tag", tag.AddRoutes)
+	micro.Route("/", game.AddRoutes)
+	micro.Route("/", skill.AddRoutes)
 	micro.Route("/", user.AddRoutes)
 
 	micro.Get("/healthchecker", func(c *fiber.Ctx) error {

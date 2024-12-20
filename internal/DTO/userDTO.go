@@ -1,4 +1,4 @@
-package userDTO
+package DTO
 
 import (
 	"Games/internal/models"

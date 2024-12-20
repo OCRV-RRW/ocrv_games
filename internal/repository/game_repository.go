@@ -45,5 +45,5 @@ func (r *GameRepository) GetAll() ([]models.Game, error) {
 }
 
 func (r *GameRepository) Delete(name string) error {
-	return GetRepositoryErrorByGormError(r.db.Where("name = ?", name).Delete(&models.Game{}).Error)
+	return GetRepositoryErrorByGormError(database.DB.Where("name = ?", name).Delete(&models.Game{}).Error)
 }

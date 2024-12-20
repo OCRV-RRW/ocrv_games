@@ -6,7 +6,8 @@ import (
 )
 
 func AddRoutes(router fiber.Router) {
-	router.Post("/", middleware.DeserializeUser, CreateGame)
-	router.Get("/", middleware.DeserializeUser, GetGames)
-	router.Delete("/:name", middleware.DeserializeUser, DeleteGame)
+	game := router.Group("/games")
+	game.Post("/", middleware.DeserializeUser, CreateGame)
+	game.Get("/", middleware.DeserializeUser, GetGames)
+	game.Delete("/:name", middleware.DeserializeUser, DeleteGame)
 }

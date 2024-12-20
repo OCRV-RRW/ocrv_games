@@ -42,7 +42,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/userDTO.ForgotPasswordInput"
+                            "$ref": "#/definitions/DTO.ForgotPasswordInput"
                         }
                     }
                 ],
@@ -93,7 +93,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/userDTO.SignInInput"
+                            "$ref": "#/definitions/DTO.SignInInput"
                         }
                     }
                 ],
@@ -101,7 +101,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.SuccessResponse-userDTO_TokenResponse"
+                            "$ref": "#/definitions/api.SuccessResponse-DTO_TokenResponse"
                         }
                     },
                     "400": {
@@ -166,7 +166,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.SuccessResponse-userDTO_TokenResponse"
+                            "$ref": "#/definitions/api.SuccessResponse-DTO_TokenResponse"
                         }
                     },
                     "403": {
@@ -209,7 +209,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/userDTO.SignUpInput"
+                            "$ref": "#/definitions/DTO.SignUpInput"
                         }
                     }
                 ],
@@ -217,7 +217,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/api.SuccessResponse-userDTO_UserResponseDTO"
+                            "$ref": "#/definitions/api.SuccessResponse-DTO_UserResponseDTO"
                         }
                     },
                     "400": {
@@ -273,7 +273,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/userDTO.ResetPasswordInput"
+                            "$ref": "#/definitions/DTO.ResetPasswordInput"
                         }
                     }
                 ],
@@ -360,7 +360,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.SuccessResponse-gameDTO_GamesResponse"
+                            "$ref": "#/definitions/api.SuccessResponse-DTO_GamesResponse"
                         }
                     },
                     "404": {
@@ -387,6 +387,17 @@ const docTemplate = `{
                 ],
                 "tags": [
                     "Game"
+                ],
+                "parameters": [
+                    {
+                        "description": "CreateGameInput",
+                        "name": "CreateGameInput",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.CreateGameInput"
+                        }
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -448,6 +459,126 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/skills/": {
+            "get": {
+                "description": "get skills",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Skill"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "string name",
+                        "name": "name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.SuccessResponse-DTO_SkillsResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create skill",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Skill"
+                ],
+                "parameters": [
+                    {
+                        "description": "CreateSkillInput",
+                        "name": "CreateSkillInput",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.CreateSkillInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete skill by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Skill"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Skill name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/": {
             "get": {
                 "description": "get user by id",
@@ -469,7 +600,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.SuccessResponse-userDTO_UsersResponse"
+                            "$ref": "#/definitions/api.SuccessResponse-DTO_UsersResponse"
                         }
                     },
                     "500": {
@@ -517,7 +648,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.SuccessResponse-userDTO_UserResponseDTO"
+                            "$ref": "#/definitions/api.SuccessResponse-DTO_UserResponseDTO"
                         }
                     },
                     "401": {
@@ -540,7 +671,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/userDTO.UpdateUserInput"
+                            "$ref": "#/definitions/DTO.UpdateUserInput"
                         }
                     }
                 ],
@@ -559,6 +690,263 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "DTO.CreateGameInput": {
+            "type": "object",
+            "required": [
+                "description",
+                "name",
+                "source"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "skills": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.CreateSkillInput"
+                    }
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.CreateSkillInput": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.ForgotPasswordInput": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.GameResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "skills": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.SkillResponseOnly"
+                    }
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.GameResponseOnly": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.GamesResponse": {
+            "type": "object",
+            "properties": {
+                "games": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.GameResponse"
+                    }
+                }
+            }
+        },
+        "DTO.ResetPasswordInput": {
+            "type": "object",
+            "required": [
+                "password",
+                "password_confirm"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "password_confirm": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.SignInInput": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.SignUpInput": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password",
+                "password_confirm"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "password_confirm": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.SkillResponse": {
+            "type": "object",
+            "properties": {
+                "games": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.GameResponseOnly"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.SkillResponseOnly": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.SkillsResponse": {
+            "type": "object",
+            "properties": {
+                "skills": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.SkillResponse"
+                    }
+                }
+            }
+        },
+        "DTO.TokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.UpdateUserInput": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "grade": {
+                    "type": "integer"
+                }
+            }
+        },
+        "DTO.UserResponse": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "continuous_progress": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "grade": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.UserResponseDTO": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/DTO.UserResponse"
+                }
+            }
+        },
+        "DTO.UsersResponse": {
+            "type": "object",
+            "properties": {
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.UserResponse"
+                    }
+                }
+            }
+        },
         "api.Error": {
             "type": "object",
             "properties": {
@@ -598,11 +986,11 @@ const docTemplate = `{
                 }
             }
         },
-        "api.SuccessResponse-gameDTO_GamesResponse": {
+        "api.SuccessResponse-DTO_GamesResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/gameDTO.GamesResponse"
+                    "$ref": "#/definitions/DTO.GamesResponse"
                 },
                 "message": {
                     "type": "string"
@@ -612,11 +1000,11 @@ const docTemplate = `{
                 }
             }
         },
-        "api.SuccessResponse-userDTO_TokenResponse": {
+        "api.SuccessResponse-DTO_SkillsResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/userDTO.TokenResponse"
+                    "$ref": "#/definitions/DTO.SkillsResponse"
                 },
                 "message": {
                     "type": "string"
@@ -626,11 +1014,11 @@ const docTemplate = `{
                 }
             }
         },
-        "api.SuccessResponse-userDTO_UserResponseDTO": {
+        "api.SuccessResponse-DTO_TokenResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/userDTO.UserResponseDTO"
+                    "$ref": "#/definitions/DTO.TokenResponse"
                 },
                 "message": {
                     "type": "string"
@@ -640,11 +1028,11 @@ const docTemplate = `{
                 }
             }
         },
-        "api.SuccessResponse-userDTO_UsersResponse": {
+        "api.SuccessResponse-DTO_UserResponseDTO": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/userDTO.UsersResponse"
+                    "$ref": "#/definitions/DTO.UserResponseDTO"
                 },
                 "message": {
                     "type": "string"
@@ -654,179 +1042,17 @@ const docTemplate = `{
                 }
             }
         },
-        "gameDTO.GameResponse": {
+        "api.SuccessResponse-DTO_UsersResponse": {
             "type": "object",
             "properties": {
-                "created_at": {
+                "data": {
+                    "$ref": "#/definitions/DTO.UsersResponse"
+                },
+                "message": {
                     "type": "string"
                 },
-                "description": {
+                "status": {
                     "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "skills": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/skillDTO.SkillOnlyResponse"
-                    }
-                }
-            }
-        },
-        "gameDTO.GamesResponse": {
-            "type": "object",
-            "properties": {
-                "games": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/gameDTO.GameResponse"
-                    }
-                }
-            }
-        },
-        "skillDTO.SkillOnlyResponse": {
-            "type": "object",
-            "required": [
-                "name"
-            ],
-            "properties": {
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "userDTO.ForgotPasswordInput": {
-            "type": "object",
-            "required": [
-                "email"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                }
-            }
-        },
-        "userDTO.ResetPasswordInput": {
-            "type": "object",
-            "required": [
-                "password",
-                "password_confirm"
-            ],
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "password_confirm": {
-                    "type": "string"
-                }
-            }
-        },
-        "userDTO.SignInInput": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "userDTO.SignUpInput": {
-            "type": "object",
-            "required": [
-                "email",
-                "name",
-                "password",
-                "password_confirm"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "password_confirm": {
-                    "type": "string"
-                }
-            }
-        },
-        "userDTO.TokenResponse": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                }
-            }
-        },
-        "userDTO.UpdateUserInput": {
-            "type": "object",
-            "properties": {
-                "age": {
-                    "type": "integer"
-                },
-                "gender": {
-                    "type": "string"
-                },
-                "grade": {
-                    "type": "integer"
-                }
-            }
-        },
-        "userDTO.UserResponse": {
-            "type": "object",
-            "properties": {
-                "age": {
-                    "type": "integer"
-                },
-                "continuous_progress": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "gender": {
-                    "type": "string"
-                },
-                "grade": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "userDTO.UserResponseDTO": {
-            "type": "object",
-            "properties": {
-                "user": {
-                    "$ref": "#/definitions/userDTO.UserResponse"
-                }
-            }
-        },
-        "userDTO.UsersResponse": {
-            "type": "object",
-            "properties": {
-                "users": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/userDTO.UserResponse"
-                    }
                 }
             }
         }

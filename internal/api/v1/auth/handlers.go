@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"Games/internal/DTO/userDTO"
+	"Games/internal/DTO"
 	"Games/internal/api"
 	"Games/internal/config"
 	"Games/internal/database"
@@ -26,15 +26,15 @@ import (
 // @Tags       Auth
 // @Accept		 json
 // @Produce		 json
-// @Param        SignUpInput		body		userDTO.SignUpInput		true   "SignUpInput"
-// @Success		 201 {object} api.SuccessResponse[userDTO.UserResponseDTO]
+// @Param        SignUpInput		body		DTO.SignUpInput		true   "SignUpInput"
+// @Success		 201 {object} api.SuccessResponse[DTO.UserResponseDTO]
 // @Failure      400 {object} api.ErrorResponse
 // @Failure      409 {object} api.ErrorResponse
 // @Failure      500 {object} api.ErrorResponse
 // @Failure      422 {object} api.ErrorResponse
 // @Router		 /api/v1/auth/register [post]
 func SignUpUser(c *fiber.Ctx) error {
-	var payload *userDTO.SignUpInput
+	var payload *DTO.SignUpInput
 
 	if err := c.BodyParser(&payload); err != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(api.NewErrorResponse([]*api.Error{
@@ -103,7 +103,7 @@ func SignUpUser(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(api.NewSuccessResponse(
-		userDTO.UserResponseDTO{userDTO.FilterUserRecord(&newUser)},
+		DTO.UserResponseDTO{DTO.FilterUserRecord(&newUser)},
 		"We sent an email with a verification code to "+newUser.Email))
 }
 
@@ -112,14 +112,14 @@ func SignUpUser(c *fiber.Ctx) error {
 // @Description	sign in user
 // @Tags        Auth
 // @Accept      json
-// @Param       SignInInput		body		userDTO.SignInInput		true   "SignInInput"
+// @Param       SignInInput		body		DTO.SignInInput		true   "SignInInput"
 // @Produce		json
-// @Success		200 {object} api.SuccessResponse[userDTO.TokenResponse]
+// @Success		200 {object} api.SuccessResponse[DTO.TokenResponse]
 // @Failure     400 {object} api.ErrorResponse
 // @Failure     422 {object} api.ErrorResponse
 // @Router	    /api/v1/auth/login [post]
 func SignInUser(c *fiber.Ctx) error {
-	var payload *userDTO.SignInInput
+	var payload *DTO.SignInInput
 
 	if err := c.BodyParser(&payload); err != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(api.NewErrorResponse([]*api.Error{
@@ -296,7 +296,7 @@ func LogoutUser(c *fiber.Ctx) error {
 // @Description	refresh access token
 // @Tags        Auth
 // @Accept		json
-// @Success	    200 {object} api.SuccessResponse[userDTO.TokenResponse]
+// @Success	    200 {object} api.SuccessResponse[DTO.TokenResponse]
 // @Failure     403 {object} api.ErrorResponse
 // @Failure     500 {object} api.ErrorResponse
 // @Failure     422 {object} api.ErrorResponse
@@ -427,7 +427,7 @@ func VerifyEmail(c *fiber.Ctx) error {
 // @Tags         Auth
 // @Accept		 json
 // @Produce      json
-// @Param        ForgotPasswordInput		body		userDTO.ForgotPasswordInput		true   "ForgotPasswordInput"
+// @Param        ForgotPasswordInput		body		DTO.ForgotPasswordInput		true   "ForgotPasswordInput"
 // @Success		 200 {object} api.Response
 // @Failure      400 {object} api.ErrorResponse
 // @Failure      401 {object} api.ErrorResponse  "User email is not verified"
@@ -435,7 +435,7 @@ func VerifyEmail(c *fiber.Ctx) error {
 // @Router		 /api/v1/auth/forgot-password [post]
 func ForgotPassword(c *fiber.Ctx) error {
 	repo := repository.NewUserRepository()
-	var payload userDTO.ForgotPasswordInput
+	var payload DTO.ForgotPasswordInput
 
 	repository.NewUserRepository()
 
@@ -488,13 +488,13 @@ func ForgotPassword(c *fiber.Ctx) error {
 // @Accept		 json
 // @Produce		 json
 // @Param        reset_code   path string true "reset code"
-// @Param        ResetPasswordInput		body		userDTO.ResetPasswordInput		true   "ResetPasswordInput"
+// @Param        ResetPasswordInput		body		DTO.ResetPasswordInput		true   "ResetPasswordInput"
 // @Success		 200 {object} api.Response
 // @Failure      400 {object} api.ErrorResponse
 // @Failure      500 {object} api.ErrorResponse
 // @Router		 /api/v1/auth/reset-password [patch]
 func ResetPassword(c *fiber.Ctx) error {
-	var payload *userDTO.ResetPasswordInput
+	var payload *DTO.ResetPasswordInput
 	resetToken := c.Params("resetToken")
 
 	userRepo := repository.NewUserRepository()

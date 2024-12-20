@@ -1,4 +1,4 @@
-package game
+package skill
 
 import (
 	"Games/internal/DTO"
@@ -10,21 +10,21 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// CreateGame godoc
+// CreateSkill godoc
 //
-// @Description	 create game
-// @Tags         Game
+// @Description	 create skill
+// @Tags         Skill
 // @Accept		 json
 // @Produce		 json
-// @Param        CreateGameInput		body		DTO.CreateGameInput		true   "CreateGameInput"
+// @Param        CreateSkillInput		body		DTO.CreateSkillInput		true   "CreateSkillInput"
 // @Success		 200
 // @Failure      422 {object} api.ErrorResponse
 // @Failure      400 {object} api.ErrorResponse
 // @Failure      409 {object} api.ErrorResponse
 // @Failure      500 {object} api.ErrorResponse
-// @Router		 /api/v1/games/ [post]
-func CreateGame(c *fiber.Ctx) error {
-	var payload *DTO.CreateGameInput
+// @Router		 /api/v1/skills/ [post]
+func CreateSkill(c *fiber.Ctx) error {
+	var payload *DTO.CreateSkillInput
 
 	if err := c.BodyParser(&payload); err != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(api.NewErrorResponse([]*api.Error{
@@ -32,29 +32,22 @@ func CreateGame(c *fiber.Ctx) error {
 		}))
 	}
 
-	gameErrors := validation.ValidateStruct(payload)
-	if gameErrors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse(gameErrors))
+	skillErrors := validation.ValidateStruct(payload)
+	if skillErrors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse(skillErrors))
 	}
 
-	skills := []*models.Skill{}
-	for _, skill := range payload.Skills {
-		skills = append(skills, DTO.FilterCreateSkillInputToSkill(&skill))
-	}
-	newGame := models.Game{
-		Name:        payload.Name,
-		Description: payload.Description,
-		Source:      payload.Source,
-		Skills:      skills,
+	newSkill := models.Skill{
+		Name: payload.Name,
 	}
 
-	r := repository.NewGameRepository()
-	err := r.Create(&newGame)
+	r := repository.NewSkillRepository()
 
+	err := r.Create(&newSkill)
 	if err != nil {
 		if errors.Is(err, repository.ErrDuplicatedKey) {
 			return c.Status(fiber.StatusConflict).JSON(api.NewErrorResponse([]*api.Error{
-				{Code: api.IncorrectParameter, Parameter: "name", Message: "game with this name already exists"},
+				{Code: api.IncorrectParameter, Parameter: "name", Message: "skill with this name already exists"},
 			}))
 		} else {
 			return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
@@ -66,27 +59,27 @@ func CreateGame(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success"})
 }
 
-// GetGames godoc
+// GetSkills godoc
 //
-// @Description  get games
-// @Tags         Game
+// @Description  get skills
+// @Tags         Skill
 // @Produce		 json
 // @Param        name  query     string     false  "string name"
-// @Success		 200    {object} api.SuccessResponse[DTO.GamesResponse]
+// @Success		 200    {object} api.SuccessResponse[DTO.SkillsResponse]
 // @Failure      404    {object} api.ErrorResponse
 // @Failure      500    {object} api.ErrorResponse
-// @Router		 /api/v1/games/ [get]
-func GetGames(c *fiber.Ctx) error {
-	r := repository.NewGameRepository()
+// @Router		 /api/v1/skills/ [get]
+func GetSkills(c *fiber.Ctx) error {
+	r := repository.NewSkillRepository()
 
 	name := c.Query("name")
 	if name != "" {
-		game, err := r.GetByName(name)
+		skill, err := r.GetByName(name)
 
 		if err != nil {
 			if errors.Is(err, repository.ErrRecordNotFound) {
 				return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
-					{Code: api.NotFound, Message: "game not found"},
+					{Code: api.NotFound, Message: "skill not found"},
 				}))
 			} else {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "fail", "error": err})
@@ -94,32 +87,33 @@ func GetGames(c *fiber.Ctx) error {
 		}
 
 		return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
-			DTO.GamesResponse{Games: []DTO.GameResponse{DTO.FilterGameRecord(game)}}, ""))
+			DTO.SkillsResponse{Skills: []DTO.SkillResponse{DTO.FilterSkillToSkillResponse(skill)}}, ""))
 	}
 
-	games, err := r.GetAll()
+	skills, err := r.GetAll()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "fail", "error": err})
 	}
-	gamesResponse := []DTO.GameResponse{}
-	for _, game := range games {
-		gamesResponse = append(gamesResponse, DTO.FilterGameRecord(&game))
+	var skillResponses []DTO.SkillResponse
+	for _, skill := range skills {
+		skillResponses = append(skillResponses, DTO.FilterSkillToSkillResponse(&skill))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(DTO.GamesResponse{Games: gamesResponse}, ""))
+	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
+		DTO.SkillsResponse{Skills: skillResponses}, ""))
 }
 
-// DeleteGame godoc
+// DeleteSkill godoc
 //
-// @Description	 delete game by id
-// @Tags         Game
+// @Description	 delete skill by id
+// @Tags         Skill
 // @Produce		 json
-// @Param        name   path string true "Game name"
+// @Param        name   path string true "Skill name"
 // @Success		 200
 // @Failure      500    {object} api.ErrorResponse
-// @Router		 /api/v1/games/ [delete]
-func DeleteGame(c *fiber.Ctx) error {
-	r := repository.NewGameRepository()
+// @Router		 /api/v1/skills/ [delete]
+func DeleteSkill(c *fiber.Ctx) error {
+	r := repository.NewSkillRepository()
 	err := r.Delete(c.Params("name"))
 	if err != nil {
 		if errors.Is(err, repository.ErrRecordNotFound) {

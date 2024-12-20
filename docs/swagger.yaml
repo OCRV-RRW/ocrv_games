@@ -1,5 +1,173 @@
 basePath: /
 definitions:
+  DTO.CreateGameInput:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      skills:
+        items:
+          $ref: '#/definitions/DTO.CreateSkillInput'
+        type: array
+      source:
+        type: string
+    required:
+    - description
+    - name
+    - source
+    type: object
+  DTO.CreateSkillInput:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  DTO.ForgotPasswordInput:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  DTO.GameResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      skills:
+        items:
+          $ref: '#/definitions/DTO.SkillResponseOnly'
+        type: array
+      source:
+        type: string
+    type: object
+  DTO.GameResponseOnly:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      source:
+        type: string
+    type: object
+  DTO.GamesResponse:
+    properties:
+      games:
+        items:
+          $ref: '#/definitions/DTO.GameResponse'
+        type: array
+    type: object
+  DTO.ResetPasswordInput:
+    properties:
+      password:
+        type: string
+      password_confirm:
+        type: string
+    required:
+    - password
+    - password_confirm
+    type: object
+  DTO.SignInInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  DTO.SignUpInput:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      password_confirm:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - password_confirm
+    type: object
+  DTO.SkillResponse:
+    properties:
+      games:
+        items:
+          $ref: '#/definitions/DTO.GameResponseOnly'
+        type: array
+      name:
+        type: string
+    type: object
+  DTO.SkillResponseOnly:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  DTO.SkillsResponse:
+    properties:
+      skills:
+        items:
+          $ref: '#/definitions/DTO.SkillResponse'
+        type: array
+    type: object
+  DTO.TokenResponse:
+    properties:
+      access_token:
+        type: string
+    type: object
+  DTO.UpdateUserInput:
+    properties:
+      age:
+        type: integer
+      gender:
+        type: string
+      grade:
+        type: integer
+    type: object
+  DTO.UserResponse:
+    properties:
+      age:
+        type: integer
+      continuous_progress:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      gender:
+        type: string
+      grade:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  DTO.UserResponseDTO:
+    properties:
+      user:
+        $ref: '#/definitions/DTO.UserResponse'
+    type: object
+  DTO.UsersResponse:
+    properties:
+      users:
+        items:
+          $ref: '#/definitions/DTO.UserResponse'
+        type: array
+    type: object
   api.Error:
     properties:
       code:
@@ -25,156 +193,50 @@ definitions:
       status:
         type: string
     type: object
-  api.SuccessResponse-gameDTO_GamesResponse:
+  api.SuccessResponse-DTO_GamesResponse:
     properties:
       data:
-        $ref: '#/definitions/gameDTO.GamesResponse'
+        $ref: '#/definitions/DTO.GamesResponse'
       message:
         type: string
       status:
         type: string
     type: object
-  api.SuccessResponse-userDTO_TokenResponse:
+  api.SuccessResponse-DTO_SkillsResponse:
     properties:
       data:
-        $ref: '#/definitions/userDTO.TokenResponse'
+        $ref: '#/definitions/DTO.SkillsResponse'
       message:
         type: string
       status:
         type: string
     type: object
-  api.SuccessResponse-userDTO_UserResponseDTO:
+  api.SuccessResponse-DTO_TokenResponse:
     properties:
       data:
-        $ref: '#/definitions/userDTO.UserResponseDTO'
+        $ref: '#/definitions/DTO.TokenResponse'
       message:
         type: string
       status:
         type: string
     type: object
-  api.SuccessResponse-userDTO_UsersResponse:
+  api.SuccessResponse-DTO_UserResponseDTO:
     properties:
       data:
-        $ref: '#/definitions/userDTO.UsersResponse'
+        $ref: '#/definitions/DTO.UserResponseDTO'
       message:
         type: string
       status:
         type: string
     type: object
-  gameDTO.GameResponse:
+  api.SuccessResponse-DTO_UsersResponse:
     properties:
-      created_at:
+      data:
+        $ref: '#/definitions/DTO.UsersResponse'
+      message:
         type: string
-      description:
+      status:
         type: string
-      name:
-        type: string
-      skills:
-        items:
-          $ref: '#/definitions/skillDTO.SkillOnlyResponse'
-        type: array
-    type: object
-  gameDTO.GamesResponse:
-    properties:
-      games:
-        items:
-          $ref: '#/definitions/gameDTO.GameResponse'
-        type: array
-    type: object
-  skillDTO.SkillOnlyResponse:
-    properties:
-      name:
-        type: string
-    required:
-    - name
-    type: object
-  userDTO.ForgotPasswordInput:
-    properties:
-      email:
-        type: string
-    required:
-    - email
-    type: object
-  userDTO.ResetPasswordInput:
-    properties:
-      password:
-        type: string
-      password_confirm:
-        type: string
-    required:
-    - password
-    - password_confirm
-    type: object
-  userDTO.SignInInput:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - password
-    type: object
-  userDTO.SignUpInput:
-    properties:
-      email:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-      password_confirm:
-        type: string
-    required:
-    - email
-    - name
-    - password
-    - password_confirm
-    type: object
-  userDTO.TokenResponse:
-    properties:
-      access_token:
-        type: string
-    type: object
-  userDTO.UpdateUserInput:
-    properties:
-      age:
-        type: integer
-      gender:
-        type: string
-      grade:
-        type: integer
-    type: object
-  userDTO.UserResponse:
-    properties:
-      age:
-        type: integer
-      continuous_progress:
-        type: string
-      created_at:
-        type: string
-      email:
-        type: string
-      gender:
-        type: string
-      grade:
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-    type: object
-  userDTO.UserResponseDTO:
-    properties:
-      user:
-        $ref: '#/definitions/userDTO.UserResponse'
-    type: object
-  userDTO.UsersResponse:
-    properties:
-      users:
-        items:
-          $ref: '#/definitions/userDTO.UserResponse'
-        type: array
     type: object
 host: https://ocrv-game
 info:
@@ -200,7 +262,7 @@ paths:
         name: ForgotPasswordInput
         required: true
         schema:
-          $ref: '#/definitions/userDTO.ForgotPasswordInput'
+          $ref: '#/definitions/DTO.ForgotPasswordInput'
       produces:
       - application/json
       responses:
@@ -233,14 +295,14 @@ paths:
         name: SignInInput
         required: true
         schema:
-          $ref: '#/definitions/userDTO.SignInInput'
+          $ref: '#/definitions/DTO.SignInInput'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.SuccessResponse-userDTO_TokenResponse'
+            $ref: '#/definitions/api.SuccessResponse-DTO_TokenResponse'
         "400":
           description: Bad Request
           schema:
@@ -282,7 +344,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.SuccessResponse-userDTO_TokenResponse'
+            $ref: '#/definitions/api.SuccessResponse-DTO_TokenResponse'
         "403":
           description: Forbidden
           schema:
@@ -308,14 +370,14 @@ paths:
         name: SignUpInput
         required: true
         schema:
-          $ref: '#/definitions/userDTO.SignUpInput'
+          $ref: '#/definitions/DTO.SignUpInput'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/api.SuccessResponse-userDTO_UserResponseDTO'
+            $ref: '#/definitions/api.SuccessResponse-DTO_UserResponseDTO'
         "400":
           description: Bad Request
           schema:
@@ -350,7 +412,7 @@ paths:
         name: ResetPasswordInput
         required: true
         schema:
-          $ref: '#/definitions/userDTO.ResetPasswordInput'
+          $ref: '#/definitions/DTO.ResetPasswordInput'
       produces:
       - application/json
       responses:
@@ -427,7 +489,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.SuccessResponse-gameDTO_GamesResponse'
+            $ref: '#/definitions/api.SuccessResponse-DTO_GamesResponse'
         "404":
           description: Not Found
           schema:
@@ -442,6 +504,13 @@ paths:
       consumes:
       - application/json
       description: create game
+      parameters:
+      - description: CreateGameInput
+        in: body
+        name: CreateGameInput
+        required: true
+        schema:
+          $ref: '#/definitions/DTO.CreateGameInput'
       produces:
       - application/json
       responses:
@@ -465,6 +534,84 @@ paths:
             $ref: '#/definitions/api.ErrorResponse'
       tags:
       - Game
+  /api/v1/skills/:
+    delete:
+      description: delete skill by id
+      parameters:
+      - description: Skill name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      tags:
+      - Skill
+    get:
+      description: get skills
+      parameters:
+      - description: string name
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse-DTO_SkillsResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      tags:
+      - Skill
+    post:
+      consumes:
+      - application/json
+      description: create skill
+      parameters:
+      - description: CreateSkillInput
+        in: body
+        name: CreateSkillInput
+        required: true
+        schema:
+          $ref: '#/definitions/DTO.CreateSkillInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      tags:
+      - Skill
   /api/v1/users/:
     delete:
       description: delete user by id
@@ -496,7 +643,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.SuccessResponse-userDTO_UsersResponse'
+            $ref: '#/definitions/api.SuccessResponse-DTO_UsersResponse'
         "500":
           description: Internal Server Error
       tags:
@@ -510,7 +657,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.SuccessResponse-userDTO_UserResponseDTO'
+            $ref: '#/definitions/api.SuccessResponse-DTO_UserResponseDTO'
         "401":
           description: Unauthorized
       tags:
@@ -523,7 +670,7 @@ paths:
         name: SignInInput
         required: true
         schema:
-          $ref: '#/definitions/userDTO.UpdateUserInput'
+          $ref: '#/definitions/DTO.UpdateUserInput'
       produces:
       - application/json
       responses:

@@ -3,7 +3,6 @@ package repository
 import (
 	"Games/internal/database"
 	"Games/internal/models"
-	"gorm.io/gorm"
 )
 
 type UserRepository struct {
@@ -24,7 +23,7 @@ func (r *UserRepository) Update(user *models.User) error {
 func (r *UserRepository) CreateUserWithTransaction(user *models.User, callback func(*models.User) error) error {
 	tx := database.DB.Begin()
 	err := tx.Create(user).Error
-	return GetRepositoryErrorByGormError(gorm.ErrDuplicatedKey)
+
 	if err != nil {
 		return GetRepositoryErrorByGormError(err)
 	}

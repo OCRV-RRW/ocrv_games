@@ -1,7 +1,7 @@
 package user
 
 import (
-	"Games/internal/DTO/userDTO"
+	"Games/internal/DTO"
 	"Games/internal/api"
 	"Games/internal/models"
 	"Games/internal/repository"
@@ -15,13 +15,13 @@ import (
 // @Description	 get current user
 // @Tags         User
 // @Produce		 json
-// @Success		 200 {object}  api.SuccessResponse[userDTO.UserResponseDTO]
+// @Success		 200 {object}  api.SuccessResponse[DTO.UserResponseDTO]
 // @Failure      401
 // @Router		 /api/v1/users/me [get]
 func GetMe(c *fiber.Ctx) error {
 	user := c.Locals("user").(*models.User)
 	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
-		userDTO.UserResponseDTO{User: userDTO.FilterUserRecord(user)}, ""))
+		DTO.UserResponseDTO{User: DTO.FilterUserRecord(user)}, ""))
 }
 
 // DeleteUser godoc
@@ -56,7 +56,7 @@ func DeleteUser(c *fiber.Ctx) error {
 // @Tags         User
 // @Produce		 json
 // @Param        id  query     string     false  "user id"
-// @Success		 200 {object} api.SuccessResponse[userDTO.UsersResponse]
+// @Success		 200 {object} api.SuccessResponse[DTO.UsersResponse]
 // @Failure      500
 // @Router		 /api/v1/users/ [get]
 func GetUser(c *fiber.Ctx) error {
@@ -78,7 +78,7 @@ func GetUser(c *fiber.Ctx) error {
 		}
 
 		return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(fiber.Map{
-			"users": []userDTO.UserResponse{userDTO.FilterUserRecord(user)}}, ""))
+			"users": []DTO.UserResponse{DTO.FilterUserRecord(user)}}, ""))
 	}
 
 	email := c.Query("email")
@@ -95,7 +95,7 @@ func GetUser(c *fiber.Ctx) error {
 			}))
 		}
 		return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(fiber.Map{
-			"users": []userDTO.UserResponse{userDTO.FilterUserRecord(user)}}, ""))
+			"users": []DTO.UserResponse{DTO.FilterUserRecord(user)}}, ""))
 	}
 
 	users, err := repo.GetAll()
@@ -105,9 +105,9 @@ func GetUser(c *fiber.Ctx) error {
 		}))
 	}
 
-	var userRecords = make([]userDTO.UserResponseDTO, len(users))
+	var userRecords = make([]DTO.UserResponseDTO, len(users))
 	for i := 0; i < len(userRecords); i++ {
-		userRecords[i].User = userDTO.FilterUserRecord(&users[i])
+		userRecords[i].User = DTO.FilterUserRecord(&users[i])
 	}
 
 	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(fiber.Map{"users": userRecords}, ""))
@@ -118,13 +118,13 @@ func GetUser(c *fiber.Ctx) error {
 // @Description	 update user
 // @Tags         User
 // @Produce		 json
-// @Param       SignInInput		body		userDTO.UpdateUserInput		true   "UpdateUserInput"
+// @Param       SignInInput		body		DTO.UpdateUserInput		true   "UpdateUserInput"
 // @Success		 200
 // @Failure      500
 // @Failure      404
 // @Router		 /api/v1/users/me [patch]
 func UpdateMe(c *fiber.Ctx) error {
-	var payload *userDTO.UpdateUserInput
+	var payload *DTO.UpdateUserInput
 	user := c.Locals("user").(*models.User)
 
 	if err := c.BodyParser(&payload); err != nil {
