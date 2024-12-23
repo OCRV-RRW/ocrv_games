@@ -67,3 +67,24 @@ func FilterUserRecord(user *models.User) UserResponse {
 		CreatedAt: *user.CreatedAt,
 	}
 }
+
+type AddScoreToSkillInput struct {
+	SkillName string `json:"skill_name" validate:"required"`
+	Score     int    `json:"score" validate:"number,gt=0"`
+}
+
+type UserSkillsResponse struct {
+	Skills []UserSkill `json:"skills"`
+}
+
+type UserSkill struct {
+	Name  string `json:"name" validate:"required"`
+	Score int    `json:"score" validate:"number,gt=0"`
+}
+
+func FilterUserSkill(userSkill models.UserSkill) UserSkill {
+	return UserSkill{
+		Name:  userSkill.SkillName,
+		Score: userSkill.Score,
+	}
+}

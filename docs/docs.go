@@ -687,18 +687,89 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/users/me/skills": {
+            "get": {
+                "description": "get score and the name of the user's skills",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.SuccessResponse-DTO_UserSkillsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "post": {
+                "description": "add score to user skill",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "parameters": [
+                    {
+                        "description": "AddScoreToSkillInput",
+                        "name": "AddScoreToSkillInput",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.AddScoreToSkillInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "DTO.AddScoreToSkillInput": {
+            "type": "object",
+            "required": [
+                "skill_name"
+            ],
+            "properties": {
+                "score": {
+                    "type": "integer"
+                },
+                "skill_name": {
+                    "type": "string"
+                }
+            }
+        },
         "DTO.CreateGameInput": {
             "type": "object",
             "required": [
                 "description",
+                "friendly_name",
                 "name",
                 "source"
             ],
             "properties": {
                 "description": {
+                    "type": "string"
+                },
+                "friendly_name": {
                     "type": "string"
                 },
                 "name": {
@@ -718,9 +789,17 @@ const docTemplate = `{
         "DTO.CreateSkillInput": {
             "type": "object",
             "required": [
+                "description",
+                "friendly_name",
                 "name"
             ],
             "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "friendly_name": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 }
@@ -746,6 +825,9 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "friendly_name": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -767,6 +849,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "friendly_name": {
                     "type": "string"
                 },
                 "name": {
@@ -844,6 +929,12 @@ const docTemplate = `{
         "DTO.SkillResponse": {
             "type": "object",
             "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "friendly_name": {
+                    "type": "string"
+                },
                 "games": {
                     "type": "array",
                     "items": {
@@ -857,10 +948,13 @@ const docTemplate = `{
         },
         "DTO.SkillResponseOnly": {
             "type": "object",
-            "required": [
-                "name"
-            ],
             "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "friendly_name": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 }
@@ -933,6 +1027,31 @@ const docTemplate = `{
             "properties": {
                 "user": {
                     "$ref": "#/definitions/DTO.UserResponse"
+                }
+            }
+        },
+        "DTO.UserSkill": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "DTO.UserSkillsResponse": {
+            "type": "object",
+            "properties": {
+                "skills": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.UserSkill"
+                    }
                 }
             }
         },
@@ -1033,6 +1152,20 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/DTO.UserResponseDTO"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.SuccessResponse-DTO_UserSkillsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/DTO.UserSkillsResponse"
                 },
                 "message": {
                     "type": "string"

@@ -118,7 +118,7 @@ func GetUser(c *fiber.Ctx) error {
 // @Description	 update user
 // @Tags         User
 // @Produce		 json
-// @Param       SignInInput		body		DTO.UpdateUserInput		true   "UpdateUserInput"
+// @Param        SignInInput		body		DTO.UpdateUserInput		true   "UpdateUserInput"
 // @Success		 200
 // @Failure      500
 // @Failure      404
@@ -162,4 +162,71 @@ func UpdateMe(c *fiber.Ctx) error {
 		}
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
+}
+
+// AddScore godoc
+//
+// @Description	 add score to user skill
+// @Tags         User
+// @Produce		 json
+// @Param        AddScoreToSkillInput		body		DTO.AddScoreToSkillInput		true   "AddScoreToSkillInput"
+// @Success		 200
+// @Failure      500
+// @Failure      404
+// @Router		 /api/v1/users/me/skills [post]
+func AddScore(c *fiber.Ctx) error {
+	var payload *DTO.AddScoreToSkillInput
+
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.UnprocessableEntity, Message: err.Error()},
+		}))
+	}
+
+	updateSkillErrors := validation.ValidateStruct(payload)
+	if updateSkillErrors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse(updateSkillErrors))
+	}
+
+	r := repository.NewUserRepository()
+
+	user := c.Locals("user").(*models.User)
+
+	err := r.UpdateSkillScore(user, payload.SkillName, payload.Score)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: err.Error()},
+		}))
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success"})
+}
+
+// GetUserScores godoc
+//
+// @Description	 get score and the name of the user's skills
+// @Tags         User
+// @Produce		 json
+// @Success		 200 {object} api.SuccessResponse[DTO.UserSkillsResponse]
+// @Failure      500
+// @Router		 /api/v1/users/me/skills [get]
+func GetUserScores(c *fiber.Ctx) error {
+	user := c.Locals("user").(*models.User)
+	r := repository.NewUserRepository()
+	userSkill, err := r.GetUserSkills(*user.ID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: err.Error()},
+		}))
+	}
+
+	userSkills := DTO.UserSkillsResponse{
+		Skills: make([]DTO.UserSkill, len(userSkill)),
+	}
+
+	for i := 0; i < len(userSkills.Skills); i++ {
+		userSkills.Skills[i] = DTO.FilterUserSkill(*userSkill[i])
+	}
+
+	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(userSkills, ""))
 }

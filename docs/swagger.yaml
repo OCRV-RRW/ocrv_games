@@ -1,8 +1,19 @@
 basePath: /
 definitions:
+  DTO.AddScoreToSkillInput:
+    properties:
+      score:
+        type: integer
+      skill_name:
+        type: string
+    required:
+    - skill_name
+    type: object
   DTO.CreateGameInput:
     properties:
       description:
+        type: string
+      friendly_name:
         type: string
       name:
         type: string
@@ -14,14 +25,21 @@ definitions:
         type: string
     required:
     - description
+    - friendly_name
     - name
     - source
     type: object
   DTO.CreateSkillInput:
     properties:
+      description:
+        type: string
+      friendly_name:
+        type: string
       name:
         type: string
     required:
+    - description
+    - friendly_name
     - name
     type: object
   DTO.ForgotPasswordInput:
@@ -37,6 +55,8 @@ definitions:
         type: string
       description:
         type: string
+      friendly_name:
+        type: string
       name:
         type: string
       skills:
@@ -51,6 +71,8 @@ definitions:
       created_at:
         type: string
       description:
+        type: string
+      friendly_name:
         type: string
       name:
         type: string
@@ -102,6 +124,10 @@ definitions:
     type: object
   DTO.SkillResponse:
     properties:
+      description:
+        type: string
+      friendly_name:
+        type: string
       games:
         items:
           $ref: '#/definitions/DTO.GameResponseOnly'
@@ -111,10 +137,12 @@ definitions:
     type: object
   DTO.SkillResponseOnly:
     properties:
+      description:
+        type: string
+      friendly_name:
+        type: string
       name:
         type: string
-    required:
-    - name
     type: object
   DTO.SkillsResponse:
     properties:
@@ -160,6 +188,22 @@ definitions:
     properties:
       user:
         $ref: '#/definitions/DTO.UserResponse'
+    type: object
+  DTO.UserSkill:
+    properties:
+      name:
+        type: string
+      score:
+        type: integer
+    required:
+    - name
+    type: object
+  DTO.UserSkillsResponse:
+    properties:
+      skills:
+        items:
+          $ref: '#/definitions/DTO.UserSkill'
+        type: array
     type: object
   DTO.UsersResponse:
     properties:
@@ -224,6 +268,15 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/DTO.UserResponseDTO'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  api.SuccessResponse-DTO_UserSkillsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/DTO.UserSkillsResponse'
       message:
         type: string
       status:
@@ -671,6 +724,40 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/DTO.UpdateUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      tags:
+      - User
+  /api/v1/users/me/skills:
+    get:
+      description: get score and the name of the user's skills
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse-DTO_UserSkillsResponse'
+        "500":
+          description: Internal Server Error
+      tags:
+      - User
+    post:
+      description: add score to user skill
+      parameters:
+      - description: AddScoreToSkillInput
+        in: body
+        name: AddScoreToSkillInput
+        required: true
+        schema:
+          $ref: '#/definitions/DTO.AddScoreToSkillInput'
       produces:
       - application/json
       responses:

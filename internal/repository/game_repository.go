@@ -26,7 +26,7 @@ func (r *GameRepository) Update(game *models.Game) error {
 
 func (r *GameRepository) GetByName(name string) (*models.Game, error) {
 	var game models.Game
-	result := database.DB.First(&game, "name = ?", name)
+	result := database.DB.Preload("Skills").First(&game, "name = ?", name)
 	err := GetRepositoryErrorByGormError(result.Error)
 	if err != nil {
 		return nil, err

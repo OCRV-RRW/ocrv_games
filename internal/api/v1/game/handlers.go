@@ -42,10 +42,11 @@ func CreateGame(c *fiber.Ctx) error {
 		skills = append(skills, DTO.FilterCreateSkillInputToSkill(&skill))
 	}
 	newGame := models.Game{
-		Name:        payload.Name,
-		Description: payload.Description,
-		Source:      payload.Source,
-		Skills:      skills,
+		Name:         payload.Name,
+		FriendlyName: payload.FriendlyName,
+		Description:  payload.Description,
+		Source:       payload.Source,
+		Skills:       skills,
 	}
 
 	r := repository.NewGameRepository()
