@@ -1033,9 +1033,17 @@ const docTemplate = `{
         "DTO.UserSkill": {
             "type": "object",
             "required": [
+                "description",
+                "friendly_name",
                 "name"
             ],
             "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "friendly_name": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },

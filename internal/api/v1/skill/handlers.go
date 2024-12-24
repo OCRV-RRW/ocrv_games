@@ -38,7 +38,9 @@ func CreateSkill(c *fiber.Ctx) error {
 	}
 
 	newSkill := models.Skill{
-		Name: payload.Name,
+		Name:         payload.Name,
+		FriendlyName: payload.FriendlyName,
+		Description:  payload.Description,
 	}
 
 	r := repository.NewSkillRepository()

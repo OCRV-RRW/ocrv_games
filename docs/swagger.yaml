@@ -191,11 +191,17 @@ definitions:
     type: object
   DTO.UserSkill:
     properties:
+      description:
+        type: string
+      friendly_name:
+        type: string
       name:
         type: string
       score:
         type: integer
     required:
+    - description
+    - friendly_name
     - name
     type: object
   DTO.UserSkillsResponse:

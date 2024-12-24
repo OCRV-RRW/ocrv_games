@@ -8,6 +8,7 @@ import (
 	"Games/internal/validation"
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	"slices"
 )
 
 // GetMe godoc
@@ -194,6 +195,11 @@ func AddScore(c *fiber.Ctx) error {
 
 	err := r.UpdateSkillScore(user, payload.SkillName, payload.Score)
 	if err != nil {
+		if errors.Is(err, repository.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.NotFound, Message: "user not found"},
+			}))
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
 			{Code: api.ServerError, Message: err.Error()},
 		}))
@@ -212,21 +218,45 @@ func AddScore(c *fiber.Ctx) error {
 // @Router		 /api/v1/users/me/skills [get]
 func GetUserScores(c *fiber.Ctx) error {
 	user := c.Locals("user").(*models.User)
+
+	// get userSkill
 	r := repository.NewUserRepository()
-	userSkill, err := r.GetUserSkills(*user.ID)
+	userSkills, err := r.GetUserSkills(*user.ID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
 			{Code: api.ServerError, Message: err.Error()},
 		}))
 	}
 
-	userSkills := DTO.UserSkillsResponse{
-		Skills: make([]DTO.UserSkill, len(userSkill)),
+	// get all skills
+	skill_r := repository.NewSkillRepository()
+	skills, err := skill_r.GetAll()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: err.Error()},
+		}))
 	}
 
-	for i := 0; i < len(userSkills.Skills); i++ {
-		userSkills.Skills[i] = DTO.FilterUserSkill(*userSkill[i])
+	userSkillsResponse := DTO.UserSkillsResponse{
+		Skills: make([]DTO.UserSkill, len(skills)),
 	}
 
-	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(userSkills, ""))
+	for i := 0; i < len(skills); i++ {
+		score := 0
+		userSkillsIndex := slices.IndexFunc(userSkills, func(skill *models.UserSkill) bool {
+			return skill.SkillName == skills[i].Name
+		})
+		if userSkillsIndex >= 0 {
+			score = userSkills[userSkillsIndex].Score
+		}
+
+		userSkillsResponse.Skills[i] = DTO.UserSkill{
+			Name:         skills[i].Name,
+			FriendlyName: skills[i].FriendlyName,
+			Description:  skills[i].Description,
+			Score:        score,
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(userSkillsResponse, ""))
 }

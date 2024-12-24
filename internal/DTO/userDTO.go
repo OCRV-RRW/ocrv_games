@@ -78,13 +78,8 @@ type UserSkillsResponse struct {
 }
 
 type UserSkill struct {
-	Name  string `json:"name" validate:"required"`
-	Score int    `json:"score" validate:"number,gt=0"`
-}
-
-func FilterUserSkill(userSkill models.UserSkill) UserSkill {
-	return UserSkill{
-		Name:  userSkill.SkillName,
-		Score: userSkill.Score,
-	}
+	Name         string `json:"name" validate:"required"`
+	FriendlyName string `json:"friendly_name" validate:"required"`
+	Description  string `json:"description" validate:"required"`
+	Score        int    `json:"score" validate:"number,gt=0"`
 }
