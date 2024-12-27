@@ -178,8 +178,8 @@ func UpdateMe(c *fiber.Ctx) error {
 // @Router		 /api/v1/users/me/skills [post]
 func AddScore(c *fiber.Ctx) error {
 	var payload *DTO.AddScoreToSkillInput
+	log.Info("update score body is:" + string(c.Body()))
 	if err := c.BodyParser(&payload); err != nil {
-		log.Info("update score body is:" + string(c.Body()))
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(api.NewErrorResponse([]*api.Error{
 			{Code: api.UnprocessableEntity, Message: err.Error()},
 		}))
