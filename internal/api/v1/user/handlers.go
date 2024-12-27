@@ -205,7 +205,7 @@ func AddScore(c *fiber.Ctx) error {
 		}))
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success"})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }
 
 // GetUserScores godoc
