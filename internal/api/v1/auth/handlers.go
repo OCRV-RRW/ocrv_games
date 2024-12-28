@@ -78,7 +78,7 @@ func SignUpUser(c *fiber.Ctx) error {
 		//Send verification code.
 		config, _ := config.LoadConfig(".")
 		err = utils.SendEmail(&newUser, &utils.EmailData{
-			URL:       config.ClientOrigin + "/api/v1/auth/verifyemail/" + verificationCode,
+			URL:       config.ClientOrigin + "/register/verify/" + verificationCode,
 			FirstName: newUser.Name,
 			Subject:   "Your account verification code",
 		}, "verificationCode.html")
