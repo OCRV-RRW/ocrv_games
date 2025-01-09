@@ -470,7 +470,7 @@ func ForgotPassword(c *fiber.Ctx) error {
 	ctx := context.TODO()
 	database.RedisClient.Set(ctx, resetToken, user.ID.String(), config.ResetPasswordTokenExpiredIn)
 	utils.SendEmail(user, &utils.EmailData{
-		URL:       config.ClientOrigin + "/api/v1/auth/resetpassword/" + resetToken,
+		URL:       config.ClientOrigin + "/forgot_password/reset/" + resetToken,
 		FirstName: user.Name,
 		Subject:   "Your password reset token (valid for 10min)",
 	}, "resetPassword.html")
