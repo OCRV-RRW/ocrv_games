@@ -48,6 +48,7 @@ services:
     container_name: minio
     restart: unless-stopped
     volumes:
+      - ~/minio/certs:/root/.minio/certs  # Mounting the certs directory
       - minio-storage:/data
       - minio-config:/root/.minio
     environment:
