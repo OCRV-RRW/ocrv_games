@@ -199,7 +199,7 @@ func SignInUser(c *fiber.Ctx) error {
 		MaxAge:   config.AccessTokenMaxAge * 60,
 		Secure:   false,
 		HTTPOnly: true,
-		Domain:   config.Domen,
+		//Domain:   config.Domen,
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -209,7 +209,7 @@ func SignInUser(c *fiber.Ctx) error {
 		MaxAge:   config.RefreshTokenMaxAge * 60,
 		Secure:   false,
 		HTTPOnly: true,
-		Domain:   config.Domen,
+		//Domain:   config.Domen,
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -219,7 +219,7 @@ func SignInUser(c *fiber.Ctx) error {
 		MaxAge:   config.AccessTokenMaxAge * 60,
 		Secure:   false,
 		HTTPOnly: false,
-		Domain:   config.Domen,
+		//Domain:   config.Domen,
 	})
 
 	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
@@ -361,7 +361,7 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 		MaxAge:   config.AccessTokenMaxAge * 60,
 		Secure:   false,
 		HTTPOnly: true,
-		Domain:   config.Domen,
+		//Domain:   config.Domen,
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -371,7 +371,7 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 		MaxAge:   config.AccessTokenMaxAge * 60,
 		Secure:   false,
 		HTTPOnly: false,
-		Domain:   config.Domen,
+		//Domain:   config.Domen,
 	})
 	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
 		fiber.Map{"access_token": accessTokenDetails.Token},
