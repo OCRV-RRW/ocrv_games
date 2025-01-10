@@ -201,7 +201,7 @@ func SignInUser(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: true,
 		Domain:   config.Domen,
-		SameSite: "none",
+		//SameSite: "none",
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -212,7 +212,7 @@ func SignInUser(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: true,
 		Domain:   config.Domen,
-		SameSite: "none",
+		//SameSite: "none",
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -223,7 +223,7 @@ func SignInUser(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: false,
 		Domain:   config.Domen,
-		SameSite: "none",
+		//SameSite: "none",
 	})
 
 	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
@@ -271,22 +271,22 @@ func LogoutUser(c *fiber.Ctx) error {
 
 	expired := time.Now().Add(-time.Hour * 24)
 	c.Cookie(&fiber.Cookie{
-		Name:     "access_token",
-		Value:    "",
-		Expires:  expired,
-		SameSite: "none",
+		Name:    "access_token",
+		Value:   "",
+		Expires: expired,
+		//SameSite: "strict",
 	})
 	c.Cookie(&fiber.Cookie{
-		Name:     "refresh_token",
-		Value:    "",
-		Expires:  expired,
-		SameSite: "none",
+		Name:    "refresh_token",
+		Value:   "",
+		Expires: expired,
+		//SameSite: "none",
 	})
 	c.Cookie(&fiber.Cookie{
-		Name:     "logged_in",
-		Value:    "",
-		Expires:  expired,
-		SameSite: "none",
+		Name:    "logged_in",
+		Value:   "",
+		Expires: expired,
+		//SameSite: "none",
 	})
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }
@@ -369,7 +369,7 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: true,
 		Domain:   config.Domen,
-		SameSite: "none",
+		//SameSite: "none",
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -380,7 +380,7 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: false,
 		Domain:   config.Domen,
-		SameSite: "none",
+		//SameSite: "none",
 	})
 	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
 		fiber.Map{"access_token": accessTokenDetails.Token},
