@@ -15,7 +15,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 	"strings"
 	"time"
 )
@@ -201,7 +200,6 @@ func SignInUser(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: true,
 		Domain:   config.Domen,
-		//SameSite: "none",
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -212,7 +210,6 @@ func SignInUser(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: true,
 		Domain:   config.Domen,
-		//SameSite: "none",
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -223,7 +220,6 @@ func SignInUser(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: false,
 		Domain:   config.Domen,
-		//SameSite: "none",
 	})
 
 	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
@@ -274,19 +270,16 @@ func LogoutUser(c *fiber.Ctx) error {
 		Name:    "access_token",
 		Value:   "",
 		Expires: expired,
-		//SameSite: "strict",
 	})
 	c.Cookie(&fiber.Cookie{
 		Name:    "refresh_token",
 		Value:   "",
 		Expires: expired,
-		//SameSite: "none",
 	})
 	c.Cookie(&fiber.Cookie{
 		Name:    "logged_in",
 		Value:   "",
 		Expires: expired,
-		//SameSite: "none",
 	})
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }
@@ -328,11 +321,11 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 		}))
 	}
 
-	var user models.User
-	err = database.DB.First(&user, "id = ?", userid).Error
+	rep := repository.NewUserRepository()
+	user, err := rep.GetUserById(userid)
 
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, repository.ErrRecordNotFound) {
 			return c.Status(fiber.StatusForbidden).JSON(api.NewErrorResponse([]*api.Error{
 				{Code: api.Forbidden, Message: "the user belonging to this token no logger exists"},
 			}))
@@ -369,7 +362,6 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: true,
 		Domain:   config.Domen,
-		//SameSite: "none",
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -380,7 +372,6 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 		Secure:   false,
 		HTTPOnly: false,
 		Domain:   config.Domen,
-		//SameSite: "none",
 	})
 	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
 		fiber.Map{"access_token": accessTokenDetails.Token},
