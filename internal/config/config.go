@@ -7,8 +7,7 @@ import (
 )
 
 type Config struct {
-	AppPort int    `mapstructure:"APP_PORT"`
-	Domen   string `mapstructure:"DOMEN"`
+	AppPort int `mapstructure:"APP_PORT"`
 
 	ClientOrigin string `mapstructure:"CLIENT_ORIGIN"`
 

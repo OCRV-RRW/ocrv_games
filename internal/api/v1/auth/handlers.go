@@ -153,78 +153,7 @@ func SignInUser(c *fiber.Ctx) error {
 		}))
 	}
 
-	config, _ := config.LoadConfig(".")
-	accessTokenDetails, err := token.CreateToken(user.ID.String(), config.AccessTokenExpiresIn, config.AccessTokenPrivateKey)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
-			{Code: api.ServerError, Message: ""},
-		}))
-	}
-
-	refreshTokenDetails, err := token.CreateToken(user.ID.String(), config.RefreshTokenExpiresIn, config.RefreshTokenPrivateKey)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
-			{Code: api.ServerError, Message: ""},
-		}))
-	}
-
-	tokenRepo := token.NewAuthTokenRepository(database.RedisClient)
-	now := time.Now()
-	errAccess := tokenRepo.SaveToken(
-		user.ID.String(),
-		accessTokenDetails,
-		time.Unix(*accessTokenDetails.ExpiresIn, 0).Sub(now))
-
-	if errAccess != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
-			{Code: api.ServerError, Message: ""},
-		}))
-	}
-
-	errRefresh := tokenRepo.SaveToken(
-		user.ID.String(),
-		refreshTokenDetails,
-		time.Unix(*refreshTokenDetails.ExpiresIn, 0).Sub(now))
-
-	if errRefresh != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
-			{Code: api.ServerError, Message: ""},
-		}))
-	}
-
-	c.Cookie(&fiber.Cookie{
-		Name:     "access_token",
-		Value:    *accessTokenDetails.Token,
-		Path:     "/",
-		MaxAge:   config.AccessTokenMaxAge * 60,
-		Secure:   false,
-		HTTPOnly: true,
-		//Domain:   config.Domen,
-	})
-
-	c.Cookie(&fiber.Cookie{
-		Name:     "refresh_token",
-		Value:    *refreshTokenDetails.Token,
-		Path:     "/",
-		MaxAge:   config.RefreshTokenMaxAge * 60,
-		Secure:   false,
-		HTTPOnly: true,
-		//Domain:   config.Domen,
-	})
-
-	c.Cookie(&fiber.Cookie{
-		Name:     "logged_in",
-		Value:    "true",
-		Path:     "/",
-		MaxAge:   config.AccessTokenMaxAge * 60,
-		Secure:   false,
-		HTTPOnly: false,
-		//Domain:   config.Domen,
-	})
-
-	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
-		fiber.Map{"access_token": accessTokenDetails.Token},
-		"success authorize"))
+	return generateAndSendToken(c, &user, "success authorize")
 }
 
 // LogoutUser godoc
@@ -336,46 +265,15 @@ func RefreshAccessToken(c *fiber.Ctx) error {
 		}
 	}
 
-	// Create and save new access token
-	now := time.Now()
-	accessTokenDetails, err := token.CreateToken(user.ID.String(), config.AccessTokenExpiresIn, config.AccessTokenPrivateKey)
+	// Remove old token
+	err = tokenRepo.RemoveTokenByTokenUuid(tokenClaims.TokenUuid)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
-			{Code: api.ServerError, Message: err.Error()},
-		}))
-	}
-	errAccess := tokenRepo.SaveToken(
-		user.ID.String(),
-		accessTokenDetails,
-		time.Unix(*accessTokenDetails.ExpiresIn, 0).Sub(now))
-	if errAccess != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
-			{Code: api.ServerError, Message: err.Error()},
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.TokenInvalidOrExpired, Message: "invalid token"},
 		}))
 	}
 
-	c.Cookie(&fiber.Cookie{
-		Name:     "access_token",
-		Value:    *accessTokenDetails.Token,
-		Path:     "/",
-		MaxAge:   config.AccessTokenMaxAge * 60,
-		Secure:   false,
-		HTTPOnly: true,
-		//Domain:   config.Domen,
-	})
-
-	c.Cookie(&fiber.Cookie{
-		Name:     "logged_in",
-		Value:    "true",
-		Path:     "/",
-		MaxAge:   config.AccessTokenMaxAge * 60,
-		Secure:   false,
-		HTTPOnly: false,
-		//Domain:   config.Domen,
-	})
-	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
-		fiber.Map{"access_token": accessTokenDetails.Token},
-		"success refresh token"))
+	return generateAndSendToken(c, user, "success refresh token")
 }
 
 // VerifyEmail godoc
@@ -545,4 +443,71 @@ func ResetPassword(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "message": "Password data updated successfully"})
+}
+
+func generateAndSendToken(c *fiber.Ctx, user *models.User, message string) error {
+	config, _ := config.LoadConfig(".")
+	tokenRepo := token.NewAuthTokenRepository(database.RedisClient)
+
+	// Create and save new access token
+	now := time.Now()
+	accessTokenDetails, err := token.CreateToken(user.ID.String(), config.AccessTokenExpiresIn, config.AccessTokenPrivateKey)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: err.Error()},
+		}))
+	}
+
+	refreshTokenDetails, err := token.CreateToken(user.ID.String(), config.RefreshTokenExpiresIn, config.RefreshTokenPrivateKey)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: ""},
+		}))
+	}
+
+	errRefresh := tokenRepo.SaveToken(
+		user.ID.String(),
+		refreshTokenDetails,
+		time.Unix(*refreshTokenDetails.ExpiresIn, 0).Sub(now))
+
+	if errRefresh != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: ""},
+		}))
+	}
+
+	c.Cookie(&fiber.Cookie{
+		Name:     "access_token",
+		Value:    *accessTokenDetails.Token,
+		Path:     "/",
+		MaxAge:   config.AccessTokenMaxAge * 60,
+		Secure:   false,
+		HTTPOnly: true,
+	})
+
+	c.Cookie(&fiber.Cookie{
+		Name:     "logged_in",
+		Value:    "true",
+		Path:     "/",
+		MaxAge:   config.AccessTokenMaxAge * 60,
+		Secure:   false,
+		HTTPOnly: false,
+	})
+
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    *refreshTokenDetails.Token,
+		Path:     "/",
+		MaxAge:   config.RefreshTokenMaxAge * 60,
+		Secure:   false,
+		HTTPOnly: true,
+	})
+
+	expiredIn := time.Unix(*accessTokenDetails.ExpiresIn, 0)
+	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
+		DTO.TokenResponse{
+			AccessToken: *accessTokenDetails.Token,
+			ExpiredIn:   &expiredIn,
+		},
+		message))
 }

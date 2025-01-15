@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"Games/internal/config"
-	"Games/internal/database"
 	"Games/internal/repository"
 	"Games/internal/token"
 	"Games/internal/utils"
@@ -24,14 +23,15 @@ func DeserializeUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": err.Error()})
 	}
 
-	tokenRepo := token.NewAuthTokenRepository(database.RedisClient)
-	userid, err := tokenRepo.GetUserIdByTokenUuid(tokenClaims.TokenUuid)
-	if err != nil {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": "Token is invalid or session has expired"})
-	}
+	// Check token in redis
+	//tokenRepo := token.NewAuthTokenRepository(database.RedisClient)
+	//userid, err := tokenRepo.GetUserIdByTokenUuid(tokenClaims.TokenUuid)
+	//if err != nil {
+	//	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": "Token is invalid or session has expired"})
+	//}
 
 	userRepo := repository.NewUserRepository()
-	user, err := userRepo.GetUserById(userid)
+	user, err := userRepo.GetUserById(tokenClaims.UserID)
 
 	if errors.Is(err, repository.ErrRecordNotFound) {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": "the user belonging to this token no logger exists"})

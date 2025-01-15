@@ -7,7 +7,8 @@ import (
 )
 
 type TokenResponse struct {
-	AccessToken string `json:"access_token"`
+	AccessToken string     `json:"access_token"`
+	ExpiredIn   *time.Time `json:"expired_in"`
 }
 
 type UserResponseDTO struct {
