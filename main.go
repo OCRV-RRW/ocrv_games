@@ -53,7 +53,7 @@ func main() {
 	}
 
 	app.Use(swagger.New(cfg))
-	app.Mount("/game-platform/api/v1", micro)
+	app.Mount("/api/v1", micro)
 	app.Use(logger.New())
 
 	micro.Route("/", auth.AddRoutes)

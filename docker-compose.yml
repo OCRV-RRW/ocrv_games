@@ -32,6 +32,7 @@ services:
       - postgres_volume:/var/lib/postgresql/data/
     networks:
       - myNetwork
+
   redis:
     image: redis:alpine
     container_name: redis
@@ -46,16 +47,13 @@ services:
   minio:
     image: minio/minio:latest
     container_name: minio
-    restart: unless-stopped
+    env_file:
+      - .env
+    restart: always
     volumes:
       - ~/minio/certs:/root/.minio/certs  # Mounting the certs directory
       - minio-storage:/data
       - minio-config:/root/.minio
-    environment:
-      - MINIO_ROOT_USER=root
-      - MINIO_ROOT_PASSWORD=12345678
-#      - MINIO_BROWSER_REDIRECT_URL=https://your_domain.com/console/
-#      - MINIO_DOMAIN=your_domain.com
     command: server /data --console-address ":9001"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
