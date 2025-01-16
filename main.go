@@ -46,7 +46,7 @@ func main() {
 	}))
 
 	cfg := swagger.Config{
-		BasePath: "/game-platform",
+		BasePath: "/",
 		FilePath: "./docs/swagger.json",
 		Path:     "swagger",
 		Title:    "Swagger API Docs",
