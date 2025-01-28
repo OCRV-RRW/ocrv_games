@@ -196,19 +196,22 @@ func LogoutUser(c *fiber.Ctx) error {
 
 	expired := time.Now().Add(-time.Hour * 24)
 	c.Cookie(&fiber.Cookie{
-		Name:    "access_token",
-		Value:   "",
-		Expires: expired,
+		Name:     "access_token",
+		Value:    "",
+		Expires:  expired,
+		SameSite: "none",
 	})
 	c.Cookie(&fiber.Cookie{
-		Name:    "refresh_token",
-		Value:   "",
-		Expires: expired,
+		Name:     "refresh_token",
+		Value:    "",
+		Expires:  expired,
+		SameSite: "none",
 	})
 	c.Cookie(&fiber.Cookie{
-		Name:    "logged_in",
-		Value:   "",
-		Expires: expired,
+		Name:     "logged_in",
+		Value:    "",
+		Expires:  expired,
+		SameSite: "none",
 	})
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }
@@ -483,6 +486,7 @@ func generateAndSendToken(c *fiber.Ctx, user *models.User, message string) error
 		MaxAge:   config.AccessTokenMaxAge * 60,
 		Secure:   false,
 		HTTPOnly: true,
+		SameSite: "none",
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -492,6 +496,7 @@ func generateAndSendToken(c *fiber.Ctx, user *models.User, message string) error
 		MaxAge:   config.AccessTokenMaxAge * 60,
 		Secure:   false,
 		HTTPOnly: false,
+		SameSite: "none",
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -501,6 +506,7 @@ func generateAndSendToken(c *fiber.Ctx, user *models.User, message string) error
 		MaxAge:   config.RefreshTokenMaxAge * 60,
 		Secure:   false,
 		HTTPOnly: true,
+		SameSite: "none",
 	})
 
 	expiredIn := time.Unix(*accessTokenDetails.ExpiresIn, 0)
