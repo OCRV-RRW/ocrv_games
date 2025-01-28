@@ -457,6 +457,44 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "patch": {
+                "description": "update game",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Game"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Game name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "UpdateGameInput",
+                        "name": "UpdateGameInput",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.UpdateGameInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/skills/": {
@@ -766,6 +804,9 @@ const docTemplate = `{
                 "source"
             ],
             "properties": {
+                "config": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -819,6 +860,9 @@ const docTemplate = `{
         "DTO.GameResponse": {
             "type": "object",
             "properties": {
+                "config": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -975,6 +1019,32 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "access_token": {
+                    "type": "string"
+                },
+                "expired_in": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.UpdateGameInput": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "friendly_name": {
+                    "type": "string"
+                },
+                "skills": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.CreateSkillInput"
+                    }
+                },
+                "source": {
                     "type": "string"
                 }
             }

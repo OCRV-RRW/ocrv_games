@@ -136,3 +136,59 @@ func DeleteGame(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }
+
+// UpdateGame godoc
+//
+// @Description	 update game
+// @Tags         Game
+// @Produce		 json
+// @Param        name   path string true "Game name"
+// @Param        UpdateGameInput		body		DTO.UpdateGameInput		true   "UpdateGameInput"
+// @Success		 200
+// @Failure      500    {object} api.ErrorResponse
+// @Router		 /api/v1/games/ [patch]
+func UpdateGame(c *fiber.Ctx) error {
+	var payload *DTO.UpdateGameInput
+
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.UnprocessableEntity, Message: err.Error()},
+		}))
+	}
+
+	gameErrors := validation.ValidateStruct(payload)
+	if gameErrors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse(gameErrors))
+	}
+
+	repo := repository.NewGameRepository()
+
+	game, err := repo.GetByName(c.Params("name"))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.NotFound, Message: "game not found"},
+		}))
+	}
+
+	if payload.FriendlyName != "" {
+		game.FriendlyName = payload.FriendlyName
+	}
+	if payload.Description != "" {
+		game.Description = payload.Description
+	}
+	if payload.Source != "" {
+		game.Source = payload.Source
+	}
+	if payload.Config != "" {
+		game.Config = payload.Config
+	}
+
+	err = repo.Update(game)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: "couldn't update game"},
+		}))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
+}

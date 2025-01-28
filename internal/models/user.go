@@ -26,6 +26,7 @@ type Game struct {
 	Source       string     `gorm:"type:varchar(100);not null"`
 	Description  string     `gorm:"type:varchar(1000);"`
 	Skills       []*Skill   `gorm:"many2many:skill_game;constraint:OnDelete:CASCADE;"`
+	Config       string     `gorm:"type:text"`
 	CreatedAt    *time.Time `gorm:"not null;default:now()"`
 }
 

@@ -10,4 +10,5 @@ func AddRoutes(router fiber.Router) {
 	game.Post("/", middleware.DeserializeUser, CreateGame)
 	game.Get("/", middleware.DeserializeUser, GetGames)
 	game.Delete("/:name", middleware.DeserializeUser, DeleteGame)
+	game.Patch("/:name", middleware.DeserializeUser, UpdateGame)
 }

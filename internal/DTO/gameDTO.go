@@ -9,8 +9,17 @@ type CreateGameInput struct {
 	Name         string             `json:"name" validate:"required"`
 	FriendlyName string             `json:"friendly_name" validate:"required"`
 	Source       string             `json:"source" validate:"required"`
+	Config       string             `json:"config"`
 	Description  string             `json:"description" validate:"required"`
 	Skills       []CreateSkillInput `json:"skills"`
+}
+
+type UpdateGameInput struct {
+	FriendlyName string             `json:"friendly_name"`
+	Description  string             `json:"description"`
+	Skills       []CreateSkillInput `json:"skills"`
+	Source       string             `json:"source"`
+	Config       string             `json:"config"`
 }
 
 type GameResponse struct {
@@ -19,6 +28,7 @@ type GameResponse struct {
 	Source       string              `json:"source"`
 	Description  string              `json:"description"`
 	Skills       []SkillResponseOnly `json:"skills"`
+	Config       string              `json:"config"`
 	CreatedAt    time.Time           `json:"created_at"`
 }
 
@@ -46,6 +56,7 @@ func FilterGameRecord(game *models.Game) GameResponse {
 		Description:  game.Description,
 		Source:       game.Source,
 		Skills:       responseTag,
+		Config:       game.Config,
 		CreatedAt:    *game.CreatedAt,
 	}
 }

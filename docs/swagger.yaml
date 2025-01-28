@@ -11,6 +11,8 @@ definitions:
     type: object
   DTO.CreateGameInput:
     properties:
+      config:
+        type: string
       description:
         type: string
       friendly_name:
@@ -51,6 +53,8 @@ definitions:
     type: object
   DTO.GameResponse:
     properties:
+      config:
+        type: string
       created_at:
         type: string
       description:
@@ -154,6 +158,23 @@ definitions:
   DTO.TokenResponse:
     properties:
       access_token:
+        type: string
+      expired_in:
+        type: string
+    type: object
+  DTO.UpdateGameInput:
+    properties:
+      config:
+        type: string
+      description:
+        type: string
+      friendly_name:
+        type: string
+      skills:
+        items:
+          $ref: '#/definitions/DTO.CreateSkillInput'
+        type: array
+      source:
         type: string
     type: object
   DTO.UpdateUserInput:
@@ -553,6 +574,31 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      tags:
+      - Game
+    patch:
+      description: update game
+      parameters:
+      - description: Game name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: UpdateGameInput
+        in: body
+        name: UpdateGameInput
+        required: true
+        schema:
+          $ref: '#/definitions/DTO.UpdateGameInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
         "500":
           description: Internal Server Error
           schema:
