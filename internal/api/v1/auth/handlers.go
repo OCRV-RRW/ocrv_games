@@ -198,21 +198,21 @@ func LogoutUser(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "access_token",
 		Value:    "",
-		Domain:   "ocrv-game.ru",
+		Domain:   ".ocrv-game.ru",
 		Expires:  expired,
 		SameSite: "none",
 	})
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
 		Value:    "",
-		Domain:   "ocrv-game.ru",
+		Domain:   ".ocrv-game.ru",
 		Expires:  expired,
 		SameSite: "none",
 	})
 	c.Cookie(&fiber.Cookie{
 		Name:     "logged_in",
 		Value:    "",
-		Domain:   "ocrv-game.ru",
+		Domain:   ".ocrv-game.ru",
 		Expires:  expired,
 		SameSite: "none",
 	})
@@ -485,7 +485,7 @@ func generateAndSendToken(c *fiber.Ctx, user *models.User, message string) error
 	c.Cookie(&fiber.Cookie{
 		Name:     "access_token",
 		Value:    *accessTokenDetails.Token,
-		Domain:   "ocrv-game.ru",
+		Domain:   ".ocrv-game.ru",
 		Path:     "/",
 		MaxAge:   config.AccessTokenMaxAge * 60,
 		Secure:   false,
@@ -495,7 +495,7 @@ func generateAndSendToken(c *fiber.Ctx, user *models.User, message string) error
 
 	c.Cookie(&fiber.Cookie{
 		Name:     "logged_in",
-		Domain:   "ocrv-game.ru",
+		Domain:   ".ocrv-game.ru",
 		Value:    "true",
 		Path:     "/",
 		MaxAge:   config.AccessTokenMaxAge * 60,
@@ -506,7 +506,7 @@ func generateAndSendToken(c *fiber.Ctx, user *models.User, message string) error
 
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
-		Domain:   "ocrv-game.ru",
+		Domain:   ".ocrv-game.ru",
 		Value:    *refreshTokenDetails.Token,
 		Path:     "/",
 		MaxAge:   config.RefreshTokenMaxAge * 60,
