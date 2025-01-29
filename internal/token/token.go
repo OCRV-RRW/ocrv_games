@@ -97,7 +97,7 @@ func CreateToken(userid string, ttl time.Duration, privateKey string) (*TokenDet
 		Token:     new(string),
 	}
 	*td.ExpiresIn = now.Add(ttl).Unix()
-	token, err := uuid.NewV6()
+	token, err := uuid.NewV7()
 
 	if err != nil {
 		return nil, fmt.Errorf("Error generating token: %v", err)
