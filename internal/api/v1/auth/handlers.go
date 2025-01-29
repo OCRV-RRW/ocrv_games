@@ -488,7 +488,7 @@ func generateAndSendToken(c *fiber.Ctx, user *models.User, message string) error
 		Domain:   ".ocrv-game.ru",
 		Path:     "/",
 		MaxAge:   config.AccessTokenMaxAge * 60,
-		Secure:   false,
+		Secure:   true,
 		HTTPOnly: true,
 		SameSite: "none",
 	})
