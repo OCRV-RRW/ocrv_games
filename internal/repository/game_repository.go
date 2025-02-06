@@ -21,6 +21,10 @@ func (r *GameRepository) Create(game *models.Game) error {
 }
 
 func (r *GameRepository) Update(game *models.Game) error {
+	err := GetRepositoryErrorByGormError(r.db.Model(game).Association("Skills").Replace(game.Skills))
+	if err != nil {
+		return err
+	}
 	return GetRepositoryErrorByGormError(r.db.Save(game).Error)
 }
 

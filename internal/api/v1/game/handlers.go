@@ -182,6 +182,17 @@ func UpdateGame(c *fiber.Ctx) error {
 	if payload.Config != "" {
 		game.Config = payload.Config
 	}
+	if payload.Skills != nil {
+		skillRepo := repository.NewSkillRepository()
+		game.Skills = []*models.Skill{}
+		for _, skill := range payload.Skills {
+			skill, err := skillRepo.GetByName(skill)
+			if err != nil {
+				continue
+			}
+			game.Skills = append(game.Skills, skill)
+		}
+	}
 
 	err = repo.Update(game)
 	if err != nil {

@@ -172,7 +172,7 @@ definitions:
         type: string
       skills:
         items:
-          $ref: '#/definitions/DTO.CreateSkillInput'
+          type: string
         type: array
       source:
         type: string

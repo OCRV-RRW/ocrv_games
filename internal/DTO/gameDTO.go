@@ -15,11 +15,11 @@ type CreateGameInput struct {
 }
 
 type UpdateGameInput struct {
-	FriendlyName string             `json:"friendly_name"`
-	Description  string             `json:"description"`
-	Skills       []CreateSkillInput `json:"skills"`
-	Source       string             `json:"source"`
-	Config       string             `json:"config"`
+	FriendlyName string   `json:"friendly_name"`
+	Description  string   `json:"description"`
+	Skills       []string `json:"skills"`
+	Source       string   `json:"source"`
+	Config       string   `json:"config"`
 }
 
 type GameResponse struct {

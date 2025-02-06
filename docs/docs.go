@@ -1041,7 +1041,7 @@ const docTemplate = `{
                 "skills": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/DTO.CreateSkillInput"
+                        "type": "string"
                     }
                 },
                 "source": {
