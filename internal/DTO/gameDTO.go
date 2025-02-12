@@ -23,21 +23,23 @@ type UpdateGameInput struct {
 }
 
 type GameResponse struct {
-	Name         string              `json:"name"`
-	FriendlyName string              `json:"friendly_name"`
-	Source       string              `json:"source"`
-	Description  string              `json:"description"`
-	Skills       []SkillResponseOnly `json:"skills"`
-	Config       string              `json:"config"`
-	CreatedAt    time.Time           `json:"created_at"`
+	Name          string              `json:"name"`
+	FriendlyName  string              `json:"friendly_name"`
+	ReleaseSource string              `json:"release_source"`
+	DebugSource   string              `json:"debug_source"`
+	Description   string              `json:"description"`
+	Skills        []SkillResponseOnly `json:"skills"`
+	Config        string              `json:"config"`
+	CreatedAt     time.Time           `json:"created_at"`
 }
 
 type GameResponseOnly struct {
-	Name         string `json:"name"`
-	FriendlyName string `json:"friendly_name"`
-	Source       string `json:"source"`
-	Description  string `json:"description"`
-	CreatedAt    string `json:"created_at"`
+	Name          string `json:"name"`
+	FriendlyName  string `json:"friendly_name"`
+	ReleaseSource string `json:"release_source"`
+	DebugSource   string `json:"debug_source"`
+	Description   string `json:"description"`
+	CreatedAt     string `json:"created_at"`
 }
 
 type GamesResponse struct {
@@ -51,21 +53,23 @@ func FilterGameRecord(game *models.Game) GameResponse {
 	}
 
 	return GameResponse{
-		Name:         game.Name,
-		FriendlyName: game.FriendlyName,
-		Description:  game.Description,
-		Source:       game.Source,
-		Skills:       responseTag,
-		Config:       game.Config,
-		CreatedAt:    *game.CreatedAt,
+		Name:          game.Name,
+		FriendlyName:  game.FriendlyName,
+		Description:   game.Description,
+		ReleaseSource: game.ReleaseSource,
+		DebugSource:   game.DebugSource,
+		Skills:        responseTag,
+		Config:        game.Config,
+		CreatedAt:     *game.CreatedAt,
 	}
 }
 
 func FilterGameToGameResponseOnly(game *models.Game) GameResponseOnly {
 	return GameResponseOnly{
-		Name:         game.Name,
-		FriendlyName: game.FriendlyName,
-		Source:       game.Source,
-		Description:  game.Description,
+		Name:          game.Name,
+		FriendlyName:  game.FriendlyName,
+		ReleaseSource: game.ReleaseSource,
+		DebugSource:   game.DebugSource,
+		Description:   game.Description,
 	}
 }
