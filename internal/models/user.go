@@ -10,6 +10,7 @@ type User struct {
 	Name               string      `gorm:"type:varchar(100);not null"`
 	Email              string      `gorm:"type:varchar(100);uniqueIndex;not null"`
 	Password           []byte      `gorm:"type:varchar(100);not null"`
+	IsAdmin            bool        `gorm:"type:boolean;default:false"`
 	Skills             []UserSkill `gorm:"foreignKey:UserID;"`
 	VerificationCode   string      `gorm:"type:varchar(100);not null"`
 	Verified           bool        `gorm:"not null"`
@@ -23,8 +24,8 @@ type User struct {
 type Game struct {
 	Name          string     `gorm:"type:varchar(100);primary_key; not null;"`
 	FriendlyName  string     `gorm:"type:varchar(100);not null;"`
-	ReleaseSource string     `gorm:"type:varchar(100);not null;"`
-	DebugSource   string     `gorm:"type:varchar(100);not null"`
+	ReleaseSource string     `gorm:"type:varchar(100);"`
+	DebugSource   string     `gorm:"type:varchar(100);"`
 	Description   string     `gorm:"type:varchar(1000);"`
 	Skills        []*Skill   `gorm:"many2many:skill_game;constraint:OnDelete:CASCADE;"`
 	Config        string     `gorm:"type:text"`

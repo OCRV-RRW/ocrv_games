@@ -665,6 +665,41 @@
                         "description": "Internal Server Error"
                     }
                 }
+            },
+            "patch": {
+                "description": "update another user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "UpdateUserInput",
+                        "name": "UpdateUserInput",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.UpdateUserInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
             }
         },
         "/api/v1/users/me": {
@@ -699,7 +734,7 @@
                 "parameters": [
                     {
                         "description": "UpdateUserInput",
-                        "name": "SignInInput",
+                        "name": "UpdateUserInput",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -794,11 +829,13 @@
             "required": [
                 "description",
                 "friendly_name",
-                "name",
-                "source"
+                "name"
             ],
             "properties": {
                 "config": {
+                    "type": "string"
+                },
+                "debug_source": {
                     "type": "string"
                 },
                 "description": {
@@ -810,14 +847,14 @@
                 "name": {
                     "type": "string"
                 },
+                "release_source": {
+                    "type": "string"
+                },
                 "skills": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/DTO.CreateSkillInput"
                     }
-                },
-                "source": {
-                    "type": "string"
                 }
             }
         },
@@ -860,6 +897,9 @@
                 "created_at": {
                     "type": "string"
                 },
+                "debug_source": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -869,14 +909,14 @@
                 "name": {
                     "type": "string"
                 },
+                "release_source": {
+                    "type": "string"
+                },
                 "skills": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/DTO.SkillResponseOnly"
                     }
-                },
-                "source": {
-                    "type": "string"
                 }
             }
         },
@@ -886,6 +926,9 @@
                 "created_at": {
                     "type": "string"
                 },
+                "debug_source": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -895,7 +938,7 @@
                 "name": {
                     "type": "string"
                 },
-                "source": {
+                "release_source": {
                     "type": "string"
                 }
             }
@@ -1026,10 +1069,16 @@
                 "config": {
                     "type": "string"
                 },
+                "debug_source": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
                 "friendly_name": {
+                    "type": "string"
+                },
+                "release_source": {
                     "type": "string"
                 },
                 "skills": {
@@ -1037,9 +1086,6 @@
                     "items": {
                         "type": "string"
                     }
-                },
-                "source": {
-                    "type": "string"
                 }
             }
         },
@@ -1054,6 +1100,9 @@
                 },
                 "grade": {
                     "type": "integer"
+                },
+                "is_admin": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1080,6 +1129,9 @@
                 },
                 "id": {
                     "type": "string"
+                },
+                "is_admin": {
+                    "type": "boolean"
                 },
                 "name": {
                     "type": "string"

@@ -7,10 +7,24 @@ import (
 
 func AddRoutes(router fiber.Router) {
 	user := router.Group("/users")
-	user.Get("/me", middleware.DeserializeUser, GetMe)
-	user.Patch("/me", middleware.DeserializeUser, UpdateMe)
-	user.Delete("/:id", middleware.DeserializeUser, DeleteUser)
+	me := user.Group("/me")
+
+	me.Get("/", middleware.DeserializeUser, GetMe)
+	me.Patch("/", middleware.DeserializeUser, UpdateMe)
+	me.Post("/skills", middleware.DeserializeUser, AddScore)
+	me.Get("/skills", middleware.DeserializeUser, GetUserScores)
+
+	user.Delete("/:id", middleware.DeserializeUser, middleware.AdminUser, DeleteUser)
 	user.Get("/", middleware.DeserializeUser, GetUser)
-	user.Post("/me/skills", middleware.DeserializeUser, AddScore)
-	user.Get("/me/skills", middleware.DeserializeUser, GetUserScores)
+	user.Patch("/:id", middleware.DeserializeUser, UpdateUser)
 }
+
+// REGISTRATION
+
+// registration
+//
+// verify email
+//
+// continue registration
+
+//

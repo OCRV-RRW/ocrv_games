@@ -6,20 +6,22 @@ import (
 )
 
 type CreateGameInput struct {
-	Name         string             `json:"name" validate:"required"`
-	FriendlyName string             `json:"friendly_name" validate:"required"`
-	Source       string             `json:"source" validate:"required"`
-	Config       string             `json:"config"`
-	Description  string             `json:"description" validate:"required"`
-	Skills       []CreateSkillInput `json:"skills"`
+	Name          string             `json:"name" validate:"required"`
+	FriendlyName  string             `json:"friendly_name" validate:"required"`
+	ReleaseSource string             `json:"release_source"`
+	DebugSource   string             `json:"debug_source"`
+	Config        string             `json:"config"`
+	Description   string             `json:"description" validate:"required"`
+	Skills        []CreateSkillInput `json:"skills"`
 }
 
 type UpdateGameInput struct {
-	FriendlyName string   `json:"friendly_name"`
-	Description  string   `json:"description"`
-	Skills       []string `json:"skills"`
-	Source       string   `json:"source"`
-	Config       string   `json:"config"`
+	FriendlyName  string   `json:"friendly_name"`
+	Description   string   `json:"description"`
+	Skills        []string `json:"skills"`
+	ReleaseSource string   `json:"release_source"`
+	DebugSource   string   `json:"debug_source"`
+	Config        string   `json:"config"`
 }
 
 type GameResponse struct {

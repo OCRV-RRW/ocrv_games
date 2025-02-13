@@ -7,8 +7,8 @@ import (
 
 func AddRoutes(router fiber.Router) {
 	game := router.Group("/games")
-	game.Post("/", middleware.DeserializeUser, CreateGame)
+	game.Post("/", middleware.DeserializeUser, middleware.AdminUser, CreateGame)
 	game.Get("/", middleware.DeserializeUser, GetGames)
-	game.Delete("/:name", middleware.DeserializeUser, DeleteGame)
-	game.Patch("/:name", middleware.DeserializeUser, UpdateGame)
+	game.Delete("/:name", middleware.DeserializeUser, middleware.AdminUser, DeleteGame)
+	game.Patch("/:name", middleware.DeserializeUser, middleware.AdminUser, UpdateGame)
 }

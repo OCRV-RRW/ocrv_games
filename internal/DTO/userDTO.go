@@ -31,6 +31,7 @@ type UserResponse struct {
 	ID                 uuid.UUID `json:"id"`
 	Name               string    `json:"name"`
 	Email              string    `json:"email"`
+	IsAdmin            bool      `json:"is_admin"`
 	Age                int       `json:"age"`
 	Grade              int       `json:"grade"`
 	Gender             string    `json:"gender"`
@@ -52,9 +53,10 @@ type ResetPasswordInput struct {
 }
 
 type UpdateUserInput struct {
-	Age    int    `json:"age" validate:"number,lt=100,gt=17"`
-	Gender string `json:"gender"`
-	Grade  int    `json:"grade" validate:"number,lt=10,gt=0"`
+	Age     int    `json:"age" validate:"number,lt=100,gt=17"`
+	Gender  string `json:"gender"`
+	Grade   int    `json:"grade" validate:"number,lt=10,gt=-1"`
+	IsAdmin bool   `json:"is_admin"`
 }
 
 func FilterUserRecord(user *models.User) UserResponse {
@@ -62,6 +64,7 @@ func FilterUserRecord(user *models.User) UserResponse {
 		ID:        *user.ID,
 		Name:      user.Name,
 		Email:     user.Email,
+		IsAdmin:   user.IsAdmin,
 		Age:       user.Age,
 		Gender:    user.Gender,
 		Grade:     user.Grade,

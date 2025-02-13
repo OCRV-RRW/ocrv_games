@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"Games/internal/api"
 	"Games/internal/config"
+	"Games/internal/models"
 	"Games/internal/repository"
 	"Games/internal/token"
 	"Games/internal/utils"
@@ -41,4 +43,15 @@ func DeserializeUser(c *fiber.Ctx) error {
 	c.Locals("access_token_uuid", tokenClaims.TokenUuid)
 
 	return c.Next()
+}
+
+func AdminUser(c *fiber.Ctx) error {
+	user := c.Locals("user").(*models.User)
+	if user.IsAdmin {
+		return c.Next()
+	}
+
+	return c.Status(fiber.StatusForbidden).JSON(*api.NewErrorResponse([]*api.Error{
+		{Code: api.Forbidden, Message: "Permission denied"},
+	}))
 }

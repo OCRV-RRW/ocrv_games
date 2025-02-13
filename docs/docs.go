@@ -671,6 +671,41 @@ const docTemplate = `{
                         "description": "Internal Server Error"
                     }
                 }
+            },
+            "patch": {
+                "description": "update another user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "UpdateUserInput",
+                        "name": "UpdateUserInput",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.UpdateUserInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
             }
         },
         "/api/v1/users/me": {
@@ -705,7 +740,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "UpdateUserInput",
-                        "name": "SignInInput",
+                        "name": "UpdateUserInput",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -800,11 +835,13 @@ const docTemplate = `{
             "required": [
                 "description",
                 "friendly_name",
-                "name",
-                "source"
+                "name"
             ],
             "properties": {
                 "config": {
+                    "type": "string"
+                },
+                "debug_source": {
                     "type": "string"
                 },
                 "description": {
@@ -816,14 +853,14 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "release_source": {
+                    "type": "string"
+                },
                 "skills": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/DTO.CreateSkillInput"
                     }
-                },
-                "source": {
-                    "type": "string"
                 }
             }
         },
@@ -866,6 +903,9 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "debug_source": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -875,14 +915,14 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "release_source": {
+                    "type": "string"
+                },
                 "skills": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/DTO.SkillResponseOnly"
                     }
-                },
-                "source": {
-                    "type": "string"
                 }
             }
         },
@@ -892,6 +932,9 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "debug_source": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -901,7 +944,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "source": {
+                "release_source": {
                     "type": "string"
                 }
             }
@@ -1032,10 +1075,16 @@ const docTemplate = `{
                 "config": {
                     "type": "string"
                 },
+                "debug_source": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
                 "friendly_name": {
+                    "type": "string"
+                },
+                "release_source": {
                     "type": "string"
                 },
                 "skills": {
@@ -1043,9 +1092,6 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
-                },
-                "source": {
-                    "type": "string"
                 }
             }
         },
@@ -1060,6 +1106,9 @@ const docTemplate = `{
                 },
                 "grade": {
                     "type": "integer"
+                },
+                "is_admin": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1086,6 +1135,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
+                },
+                "is_admin": {
+                    "type": "boolean"
                 },
                 "name": {
                     "type": "string"
