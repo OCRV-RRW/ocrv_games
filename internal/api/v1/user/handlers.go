@@ -108,9 +108,9 @@ func GetUser(c *fiber.Ctx) error {
 		}))
 	}
 
-	var userRecords = make([]DTO.UserResponseDTO, len(users))
+	var userRecords = make([]DTO.UserResponse, len(users))
 	for i := 0; i < len(userRecords); i++ {
-		userRecords[i].User = DTO.FilterUserRecord(&users[i])
+		userRecords[i] = DTO.FilterUserRecord(&users[i])
 	}
 
 	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(fiber.Map{"users": userRecords}, ""))
