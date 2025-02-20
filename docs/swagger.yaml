@@ -66,6 +66,8 @@ definitions:
         type: string
       name:
         type: string
+      preview_url:
+        type: string
       release_source:
         type: string
       skills:
@@ -84,6 +86,8 @@ definitions:
       friendly_name:
         type: string
       name:
+        type: string
+      preview_url:
         type: string
       release_source:
         type: string
@@ -644,6 +648,31 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      tags:
+      - Game
+  /api/v1/games/upload-preview:
+    patch:
+      description: upload game preview
+      parameters:
+      - description: Game name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Preview image
+        in: formData
+        name: preview
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
         "500":
           description: Internal Server Error
           schema:

@@ -73,6 +73,16 @@ func CreateGame(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success"})
 }
 
+// UploadGamePreview godoc
+//
+// @Description	 upload game preview
+// @Tags         Game
+// @Produce		 json
+// @Param        name		path		string		true	"Game name"
+// @Param        preview	formData	file		true	"Preview image"
+// @Success		 200
+// @Failure      500		{object}	api.ErrorResponse
+// @Router		 /api/v1/games/upload-preview [patch]
 func UploadGamePreview(c *fiber.Ctx) error {
 	gameName := c.Params("name")
 

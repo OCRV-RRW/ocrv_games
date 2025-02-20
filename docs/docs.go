@@ -497,6 +497,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/games/upload-preview": {
+            "patch": {
+                "description": "upload game preview",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Game"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Game name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Preview image",
+                        "name": "preview",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/skills/": {
             "get": {
                 "description": "get skills",
@@ -915,6 +953,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "preview_url": {
+                    "type": "string"
+                },
                 "release_source": {
                     "type": "string"
                 },
@@ -942,6 +983,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "preview_url": {
                     "type": "string"
                 },
                 "release_source": {
