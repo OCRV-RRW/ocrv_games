@@ -3,8 +3,10 @@ package user
 import (
 	"Games/internal/DTO"
 	"Games/internal/api"
+	"Games/internal/database"
 	"Games/internal/models"
 	"Games/internal/repository"
+	"Games/internal/token"
 	"Games/internal/validation"
 	"encoding/json"
 	"errors"
@@ -38,7 +40,9 @@ func GetMe(c *fiber.Ctx) error {
 // @Router		 /api/v1/users/ [delete]
 func DeleteUser(c *fiber.Ctx) error {
 	r := repository.NewUserRepository()
-	err := r.DeleteUser(c.Params("id"))
+	user_id := c.Params("id")
+	err := r.DeleteUser(c.Params(user_id))
+
 	if err != nil {
 		if errors.Is(err, repository.ErrRecordNotFound) {
 			return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
@@ -50,6 +54,13 @@ func DeleteUser(c *fiber.Ctx) error {
 			}))
 		}
 	}
+
+	tokenRepo := token.NewAuthTokenRepository(database.RedisClient)
+	err = tokenRepo.RemoveAllUserToken(user_id)
+	if err != nil {
+		log.Warnf("Couldn't reset user token error: %v", err)
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }
 
