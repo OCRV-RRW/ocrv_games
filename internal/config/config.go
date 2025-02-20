@@ -18,6 +18,12 @@ type Config struct {
 	DBName         string `mapstructure:"POSTGRES_DB"`
 	DBPort         string `mapstructure:"POSTGRES_PORT"`
 
+	//MINIO
+	MinioHost      string `mapstructure:"MINIO_HOST"`
+	MinioAccessKey string `mapstructure:"MINIO_ACCESS_KEY"`
+	MinioSecretKey string `mapstructure:"MINIO_SECRET_KEY"`
+	AppBucket      string `mapstructure:"MINIO_BUCKET"`
+
 	//Redis
 	RedisPort string `mapstructure:"REDIS_PORT"`
 	RedisHost string `mapstructure:"REDIS_HOST"`
