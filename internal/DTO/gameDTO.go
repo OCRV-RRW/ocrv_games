@@ -30,6 +30,7 @@ type GameResponse struct {
 	ReleaseSource string              `json:"release_source"`
 	DebugSource   string              `json:"debug_source"`
 	Description   string              `json:"description"`
+	PreviewUrl    string              `json:"preview_url"`
 	Skills        []SkillResponseOnly `json:"skills"`
 	Config        string              `json:"config"`
 	CreatedAt     time.Time           `json:"created_at"`
@@ -41,6 +42,7 @@ type GameResponseOnly struct {
 	ReleaseSource string `json:"release_source"`
 	DebugSource   string `json:"debug_source"`
 	Description   string `json:"description"`
+	PreviewUrl    string `json:"preview_url"`
 	CreatedAt     string `json:"created_at"`
 }
 
@@ -58,6 +60,7 @@ func FilterGameRecord(game *models.Game) GameResponse {
 		Name:          game.Name,
 		FriendlyName:  game.FriendlyName,
 		Description:   game.Description,
+		PreviewUrl:    game.PreviewUrl,
 		ReleaseSource: game.ReleaseSource,
 		DebugSource:   game.DebugSource,
 		Skills:        responseTag,
@@ -73,5 +76,6 @@ func FilterGameToGameResponseOnly(game *models.Game) GameResponseOnly {
 		ReleaseSource: game.ReleaseSource,
 		DebugSource:   game.DebugSource,
 		Description:   game.Description,
+		PreviewUrl:    game.PreviewUrl,
 	}
 }

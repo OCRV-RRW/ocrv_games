@@ -3,11 +3,13 @@ package game
 import (
 	"Games/internal/DTO"
 	"Games/internal/api"
+	"Games/internal/database"
 	"Games/internal/models"
 	"Games/internal/repository"
 	"Games/internal/validation"
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 // CreateGame godoc
@@ -26,6 +28,8 @@ import (
 func CreateGame(c *fiber.Ctx) error {
 	var payload *DTO.CreateGameInput
 
+	log.Info(c.FormValue("name"))
+
 	if err := c.BodyParser(&payload); err != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(api.NewErrorResponse([]*api.Error{
 			{Code: api.UnprocessableEntity, Message: err.Error()},
@@ -41,6 +45,7 @@ func CreateGame(c *fiber.Ctx) error {
 	for _, skill := range payload.Skills {
 		skills = append(skills, DTO.FilterCreateSkillInputToSkill(&skill))
 	}
+
 	newGame := models.Game{
 		Name:          payload.Name,
 		FriendlyName:  payload.FriendlyName,
@@ -66,6 +71,54 @@ func CreateGame(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success"})
+}
+
+func UploadGamePreview(c *fiber.Ctx) error {
+	gameName := c.Params("name")
+
+	gr := repository.NewGameRepository()
+	game, err := gr.GetByName(gameName)
+
+	if err != nil {
+		if errors.Is(err, repository.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.NotFound, Message: "couldn't find game"},
+			}))
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: "error"},
+		}))
+	}
+
+	fileHeader, _ := c.FormFile("preview")
+
+	if fileHeader == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.IncorrectParameter, Parameter: "preview", Message: "file is nil"},
+		}))
+	}
+
+	objectName := fileHeader.Filename
+	fileReader, _ := fileHeader.Open()
+	defer fileReader.Close()
+	info, err := database.PutGamePreviewer(game, objectName, fileReader)
+	if err != nil {
+		var incorrectParameterMessage string = "Incorrect parameter"
+		if errors.Is(err, database.S3ErrorIncorrectFormat) {
+			incorrectParameterMessage = "Incorrect format. Allowed format is png, jpg."
+		}
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.IncorrectParameter, Parameter: "preview", Message: incorrectParameterMessage},
+		}))
+	}
+	game.PreviewUrl = info.Location
+	err = gr.Update(game)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: "Something went wrong"},
+		}))
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }
 
 // GetGames godoc
@@ -205,5 +258,14 @@ func UpdateGame(c *fiber.Ctx) error {
 		}))
 	}
 
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
+}
+
+func TestHandler(c *fiber.Ctx) error {
+	fileHeader, _ := c.FormFile("preview")
+	objectName := fileHeader.Filename
+	fileReader, _ := fileHeader.Open()
+	defer fileReader.Close()
+	database.PutObject(objectName, fileReader)
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }
