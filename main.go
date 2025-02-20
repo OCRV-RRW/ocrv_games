@@ -31,8 +31,10 @@ func main() {
 	if err != nil {
 		log.Fatalln("Failed to load environment variables! \n", err.Error())
 	}
+
 	database.InitDB(&conf)
 	database.ConnectRedis(&conf)
+	database.ConnectMinio(&conf)
 
 	app := fiber.New()
 	micro := fiber.New()
