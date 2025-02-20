@@ -54,15 +54,15 @@ services:
       - ~/minio/certs:/root/.minio/certs  # Mounting the certs directory
       - minio-storage:/data
       - minio-config:/root/.minio
-    command: server /data --console-address ":9001"
+    command: server /data --console-address ":${MINIO_CONSOLE_PORT}" --address=":${MINIO_STORAGE_PORT}"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
       interval: 30s
       timeout: 20s
       retries: 3
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${MINIO_STORAGE_PORT}:${MINIO_STORAGE_PORT}"
+      - "${MINIO_CONSOLE_PORT}:${MINIO_CONSOLE_PORT}"
 
 volumes:
   postgres_volume:
