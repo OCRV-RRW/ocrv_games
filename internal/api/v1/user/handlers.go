@@ -40,8 +40,8 @@ func GetMe(c *fiber.Ctx) error {
 // @Router		 /api/v1/users/ [delete]
 func DeleteUser(c *fiber.Ctx) error {
 	r := repository.NewUserRepository()
-	user_id := c.Params("id")
-	err := r.DeleteUser(c.Params(user_id))
+	userId := c.Params("id")
+	err := r.DeleteUser(userId)
 
 	if err != nil {
 		if errors.Is(err, repository.ErrRecordNotFound) {
@@ -56,7 +56,7 @@ func DeleteUser(c *fiber.Ctx) error {
 	}
 
 	tokenRepo := token.NewAuthTokenRepository(database.RedisClient)
-	err = tokenRepo.RemoveAllUserToken(user_id)
+	err = tokenRepo.RemoveAllUserToken(userId)
 	if err != nil {
 		log.Warnf("Couldn't reset user token error: %v", err)
 	}
