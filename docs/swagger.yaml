@@ -211,7 +211,7 @@ definitions:
     type: object
   DTO.UserResponse:
     properties:
-      birthdate:
+      birthday:
         type: string
       continuous_progress:
         type: string

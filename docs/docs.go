@@ -1218,7 +1218,7 @@ const docTemplate = `{
         "DTO.UserResponse": {
             "type": "object",
             "properties": {
-                "birthdate": {
+                "birthday": {
                     "type": "string"
                 },
                 "continuous_progress": {

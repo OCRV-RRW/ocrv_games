@@ -32,7 +32,7 @@ type UserResponse struct {
 	Name               string              `json:"name"`
 	Email              string              `json:"email"`
 	IsAdmin            bool                `json:"is_admin"`
-	Birthdate          time.Time           `json:"birthdate"`
+	Birthday           time.Time           `json:"birthday"`
 	Grade              int                 `json:"grade"`
 	Gender             string              `json:"gender"`
 	ContinuousProgress string              `json:"continuous_progress"`
@@ -66,7 +66,7 @@ func FilterUserRecord(user *models.User, userSkills []UserSkillResponse) UserRes
 		Name:      user.Name,
 		Email:     user.Email,
 		IsAdmin:   user.IsAdmin,
-		Birthdate: user.Birthdate,
+		Birthday:  user.Birthday,
 		Gender:    user.Gender,
 		Grade:     user.Grade,
 		Skills:    userSkills,

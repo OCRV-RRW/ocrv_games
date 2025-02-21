@@ -11,10 +11,10 @@ type User struct {
 	Email              string       `gorm:"type:varchar(100);uniqueIndex;not null"`
 	Password           []byte       `gorm:"type:varchar(100);not null"`
 	IsAdmin            bool         `gorm:"type:boolean;default:false"`
-	Skills             []*UserSkill `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"` //`gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
+	Skills             []*UserSkill `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
 	VerificationCode   string       `gorm:"type:varchar(100);not null"`
 	Verified           bool         `gorm:"not null"`
-	Birthdate          time.Time    `gorm:"type:date"`
+	Birthday           time.Time    `gorm:"type:date"`
 	Gender             string       `gorm:"type:varchar(100);"`
 	Grade              int          `gorm:"type:integer"`
 	ContinuousProgress int          `gorm:"type:integer"`
