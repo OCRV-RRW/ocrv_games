@@ -4,6 +4,11 @@ import (
 	"Games/internal/models"
 )
 
+type UpdateSkillInput struct {
+	FriendlyName string `json:"friendly_name" validate:"required"`
+	Description  string `json:"description" validate:"required"`
+}
+
 type CreateSkillInput struct {
 	Name         string `json:"name" validate:"required"`
 	FriendlyName string `json:"friendly_name" validate:"required"`

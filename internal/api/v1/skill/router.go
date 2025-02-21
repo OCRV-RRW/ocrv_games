@@ -10,4 +10,5 @@ func AddRoutes(router fiber.Router) {
 	skill.Post("/", middleware.DeserializeUser, CreateSkill)
 	skill.Get("/", middleware.DeserializeUser, GetSkills)
 	skill.Delete("/:name", middleware.DeserializeUser, DeleteSkill)
+	skill.Patch("/:name", middleware.DeserializeUser, UpdateSkill)
 }

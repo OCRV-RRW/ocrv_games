@@ -131,3 +131,53 @@ func DeleteSkill(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
 }
+
+// UpdateSkill godoc
+//
+// @Description	 update skill by id
+// @Tags		Skill
+// @Produce		json
+// @Param		name	path string true "Skill name"
+// @Param        UpdateSkillInput		body		DTO.UpdateSkillInput		true   "UpdateSkillInput"
+// @Success		200
+// @Failure		500		{object} api.ErrorResponse
+// @Failure		404		{object} api.ErrorResponse
+// @Router	/api/v1/skills/ [patch]
+func UpdateSkill(c *fiber.Ctx) error {
+	var payload *DTO.UpdateSkillInput
+
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.UnprocessableEntity, Message: err.Error()},
+		}))
+	}
+
+	skillErrors := validation.ValidateStruct(payload)
+	if skillErrors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse(skillErrors))
+	}
+
+	name := c.Params("name")
+	r := repository.NewSkillRepository()
+
+	newSkill := &models.Skill{
+		Name:         name,
+		FriendlyName: payload.FriendlyName,
+		Description:  payload.Description,
+	}
+
+	err := r.Update(newSkill)
+
+	if err != nil {
+		if errors.Is(err, repository.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.NotFound, Message: err.Error()},
+			}))
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: err.Error()},
+		}))
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success"})
+}
