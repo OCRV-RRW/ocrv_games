@@ -13,6 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"slices"
+	"time"
 )
 
 // GetMe godoc
@@ -25,8 +26,16 @@ import (
 // @Router		 /api/v1/users/me [get]
 func GetMe(c *fiber.Ctx) error {
 	user := c.Locals("user").(*models.User)
+
+	userSkills, err := GetUserSkillResponse(user)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: err.Error()},
+		}))
+	}
+
 	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(
-		DTO.UserResponseDTO{User: DTO.FilterUserRecord(user)}, ""))
+		DTO.UserResponseDTO{User: DTO.FilterUserRecord(user, userSkills)}, ""))
 }
 
 // DeleteUser godoc
@@ -91,8 +100,15 @@ func GetUser(c *fiber.Ctx) error {
 			}
 		}
 
+		userSkills, err := GetUserSkillResponse(user) // TODO
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.ServerError, Message: err.Error()},
+			}))
+		}
+
 		return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(fiber.Map{
-			"users": []DTO.UserResponse{DTO.FilterUserRecord(user)}}, ""))
+			"users": []DTO.UserResponse{DTO.FilterUserRecord(user, userSkills)}}, ""))
 	}
 
 	email := c.Query("email")
@@ -108,8 +124,16 @@ func GetUser(c *fiber.Ctx) error {
 				{Code: api.ServerError, Message: "couldn't get user"},
 			}))
 		}
+
+		userSkills, err := GetUserSkillResponse(user) // TODO
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.ServerError, Message: err.Error()},
+			}))
+		}
+
 		return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(fiber.Map{
-			"users": []DTO.UserResponse{DTO.FilterUserRecord(user)}}, ""))
+			"users": []DTO.UserResponse{DTO.FilterUserRecord(user, userSkills)}}, ""))
 	}
 
 	users, err := repo.GetAll()
@@ -121,7 +145,14 @@ func GetUser(c *fiber.Ctx) error {
 
 	var userRecords = make([]DTO.UserResponse, len(users))
 	for i := 0; i < len(userRecords); i++ {
-		userRecords[i] = DTO.FilterUserRecord(&users[i])
+		userSkills, err := GetUserSkillResponse(&users[i]) // TODO
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.ServerError, Message: err.Error()},
+			}))
+		}
+
+		userRecords[i] = DTO.FilterUserRecord(&users[i], userSkills)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(fiber.Map{"users": userRecords}, ""))
@@ -225,18 +256,8 @@ func AddScore(c *fiber.Ctx) error {
 func GetUserScores(c *fiber.Ctx) error {
 	user := c.Locals("user").(*models.User)
 
-	// get userSkill
-	r := repository.NewUserRepository()
-	userSkills, err := r.GetUserSkills(*user.ID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
-			{Code: api.ServerError, Message: err.Error()},
-		}))
-	}
+	userSkills, err := GetUserSkillResponse(user)
 
-	// get all skills
-	skill_r := repository.NewSkillRepository()
-	skills, err := skill_r.GetAll()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
 			{Code: api.ServerError, Message: err.Error()},
@@ -244,24 +265,7 @@ func GetUserScores(c *fiber.Ctx) error {
 	}
 
 	userSkillsResponse := DTO.UserSkillsResponse{
-		Skills: make([]DTO.UserSkill, len(skills)),
-	}
-
-	for i := 0; i < len(skills); i++ {
-		score := 0
-		userSkillsIndex := slices.IndexFunc(userSkills, func(skill *models.UserSkill) bool {
-			return skill.SkillName == skills[i].Name
-		})
-		if userSkillsIndex >= 0 {
-			score = userSkills[userSkillsIndex].Score
-		}
-
-		userSkillsResponse.Skills[i] = DTO.UserSkill{
-			Name:         skills[i].Name,
-			FriendlyName: skills[i].FriendlyName,
-			Description:  skills[i].Description,
-			Score:        score,
-		}
+		Skills: userSkills,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(userSkillsResponse, ""))
@@ -292,8 +296,8 @@ func updateUser(c *fiber.Ctx, user *models.User) error {
 
 	repo := repository.NewUserRepository()
 
-	if age, ok := data["age"].(float64); ok {
-		user.Age = int(age)
+	if birthdate, ok := data["birthdate"].(time.Time); ok {
+		user.Birthdate = birthdate
 	}
 	if grade, ok := data["grade"].(float64); ok {
 		user.Grade = int(grade)
@@ -323,4 +327,41 @@ func updateUser(c *fiber.Ctx, user *models.User) error {
 		}
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
+}
+
+func GetUserSkillResponse(user *models.User) ([]DTO.UserSkillResponse, error) {
+	// get userSkill
+	r := repository.NewUserRepository()
+	userSkills, err := r.GetUserSkills(*user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// get all skills
+	skillR := repository.NewSkillRepository()
+	skills, err := skillR.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	userSkillDTO := make([]DTO.UserSkillResponse, len(skills))
+
+	for i := 0; i < len(skills); i++ {
+		score := 0
+		userSkillsIndex := slices.IndexFunc(userSkills, func(skill *models.UserSkill) bool {
+			return skill.SkillName == skills[i].Name
+		})
+		if userSkillsIndex >= 0 {
+			score = userSkills[userSkillsIndex].Score
+		}
+
+		userSkillDTO[i] = DTO.UserSkillResponse{
+			Name:         skills[i].Name,
+			FriendlyName: skills[i].FriendlyName,
+			Description:  skills[i].Description,
+			Score:        score,
+		}
+	}
+
+	return userSkillDTO, nil
 }

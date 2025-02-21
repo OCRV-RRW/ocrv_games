@@ -1153,8 +1153,8 @@
         "DTO.UserResponse": {
             "type": "object",
             "properties": {
-                "age": {
-                    "type": "integer"
+                "birthdate": {
+                    "type": "string"
                 },
                 "continuous_progress": {
                     "type": "string"
@@ -1179,6 +1179,12 @@
                 },
                 "name": {
                     "type": "string"
+                },
+                "skills": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.UserSkillResponse"
+                    }
                 }
             }
         },
@@ -1190,7 +1196,7 @@
                 }
             }
         },
-        "DTO.UserSkill": {
+        "DTO.UserSkillResponse": {
             "type": "object",
             "required": [
                 "description",
@@ -1218,7 +1224,7 @@
                 "skills": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/DTO.UserSkill"
+                        "$ref": "#/definitions/DTO.UserSkillResponse"
                     }
                 }
             }

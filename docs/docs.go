@@ -1159,8 +1159,8 @@ const docTemplate = `{
         "DTO.UserResponse": {
             "type": "object",
             "properties": {
-                "age": {
-                    "type": "integer"
+                "birthdate": {
+                    "type": "string"
                 },
                 "continuous_progress": {
                     "type": "string"
@@ -1185,6 +1185,12 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "skills": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.UserSkillResponse"
+                    }
                 }
             }
         },
@@ -1196,7 +1202,7 @@ const docTemplate = `{
                 }
             }
         },
-        "DTO.UserSkill": {
+        "DTO.UserSkillResponse": {
             "type": "object",
             "required": [
                 "description",
@@ -1224,7 +1230,7 @@ const docTemplate = `{
                 "skills": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/DTO.UserSkill"
+                        "$ref": "#/definitions/DTO.UserSkillResponse"
                     }
                 }
             }

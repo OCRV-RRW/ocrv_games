@@ -3,6 +3,7 @@ package auth
 import (
 	"Games/internal/DTO"
 	"Games/internal/api"
+	"Games/internal/api/v1/user"
 	"Games/internal/config"
 	"Games/internal/database"
 	"Games/internal/models"
@@ -101,8 +102,16 @@ func SignUpUser(c *fiber.Ctx) error {
 		}))
 	}
 
+	userSkills, err := user.GetUserSkillResponse(&newUser) // TODO
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: err.Error()},
+		}))
+	}
+
 	return c.Status(fiber.StatusCreated).JSON(api.NewSuccessResponse(
-		DTO.UserResponseDTO{DTO.FilterUserRecord(&newUser)},
+		DTO.UserResponseDTO{DTO.FilterUserRecord(&newUser, userSkills)},
 		"We sent an email with a verification code to "+newUser.Email))
 }
 

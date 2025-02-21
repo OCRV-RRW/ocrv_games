@@ -28,15 +28,16 @@ type SignInInput struct {
 }
 
 type UserResponse struct {
-	ID                 uuid.UUID `json:"id"`
-	Name               string    `json:"name"`
-	Email              string    `json:"email"`
-	IsAdmin            bool      `json:"is_admin"`
-	Age                int       `json:"age"`
-	Grade              int       `json:"grade"`
-	Gender             string    `json:"gender"`
-	ContinuousProgress string    `json:"continuous_progress"`
-	CreatedAt          time.Time `json:"created_at"`
+	ID                 uuid.UUID           `json:"id"`
+	Name               string              `json:"name"`
+	Email              string              `json:"email"`
+	IsAdmin            bool                `json:"is_admin"`
+	Birthdate          time.Time           `json:"birthdate"`
+	Grade              int                 `json:"grade"`
+	Gender             string              `json:"gender"`
+	ContinuousProgress string              `json:"continuous_progress"`
+	Skills             []UserSkillResponse `json:"skills"`
+	CreatedAt          time.Time           `json:"created_at"`
 }
 
 type UsersResponse struct {
@@ -59,15 +60,16 @@ type UpdateUserInput struct {
 	IsAdmin bool   `json:"is_admin"`
 }
 
-func FilterUserRecord(user *models.User) UserResponse {
+func FilterUserRecord(user *models.User, userSkills []UserSkillResponse) UserResponse {
 	return UserResponse{
 		ID:        *user.ID,
 		Name:      user.Name,
 		Email:     user.Email,
 		IsAdmin:   user.IsAdmin,
-		Age:       user.Age,
+		Birthdate: user.Birthdate,
 		Gender:    user.Gender,
 		Grade:     user.Grade,
+		Skills:    userSkills,
 		CreatedAt: *user.CreatedAt,
 	}
 }
@@ -78,10 +80,10 @@ type AddScoreToSkillInput struct {
 }
 
 type UserSkillsResponse struct {
-	Skills []UserSkill `json:"skills"`
+	Skills []UserSkillResponse `json:"skills"`
 }
 
-type UserSkill struct {
+type UserSkillResponse struct {
 	Name         string `json:"name" validate:"required"`
 	FriendlyName string `json:"friendly_name" validate:"required"`
 	Description  string `json:"description" validate:"required"`

@@ -201,8 +201,8 @@ definitions:
     type: object
   DTO.UserResponse:
     properties:
-      age:
-        type: integer
+      birthdate:
+        type: string
       continuous_progress:
         type: string
       created_at:
@@ -219,13 +219,17 @@ definitions:
         type: boolean
       name:
         type: string
+      skills:
+        items:
+          $ref: '#/definitions/DTO.UserSkillResponse'
+        type: array
     type: object
   DTO.UserResponseDTO:
     properties:
       user:
         $ref: '#/definitions/DTO.UserResponse'
     type: object
-  DTO.UserSkill:
+  DTO.UserSkillResponse:
     properties:
       description:
         type: string
@@ -244,7 +248,7 @@ definitions:
     properties:
       skills:
         items:
-          $ref: '#/definitions/DTO.UserSkill'
+          $ref: '#/definitions/DTO.UserSkillResponse'
         type: array
     type: object
   DTO.UsersResponse:

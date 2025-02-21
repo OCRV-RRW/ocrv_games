@@ -79,17 +79,17 @@ func (r *UserRepository) UpdateSkillScore(user *models.User, skillName string, s
 		return GetRepositoryErrorByGormError(err)
 	}
 
-	skill_index := slices.IndexFunc(user.Skills, func(skill models.UserSkill) bool {
+	skill_index := slices.IndexFunc(user.Skills, func(skill *models.UserSkill) bool {
 		if skill.SkillName == skillName {
 			return true
 		}
 		return false
 	})
 
-	var userSkill models.UserSkill
+	var userSkill *models.UserSkill
 
 	if skill_index == -1 {
-		userSkill = models.UserSkill{
+		userSkill = &models.UserSkill{
 			UserID:    *user.ID,
 			SkillName: skillName,
 			Score:     0,
