@@ -87,53 +87,22 @@ func GetUser(c *fiber.Ctx) error {
 
 	id := c.Query("id")
 	if id != "" {
-		user, err := repo.GetUserById(id)
+		userResponse, err := getUserById(c, id)
 		if err != nil {
-			if errors.Is(err, repository.ErrRecordNotFound) {
-				return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
-					{Code: api.NotFound, Message: "user not found"},
-				}))
-			} else {
-				return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
-					{Code: api.ServerError, Message: "couldn't get user"},
-				}))
-			}
+			return err
 		}
-
-		userSkills, err := GetUserSkillResponse(user) // TODO
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
-				{Code: api.ServerError, Message: err.Error()},
-			}))
-		}
-
 		return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(fiber.Map{
-			"users": []DTO.UserResponse{DTO.FilterUserRecord(user, userSkills)}}, ""))
+			"users": []*DTO.UserResponse{userResponse}}, ""))
 	}
 
 	email := c.Query("email")
 	if email != "" {
-		user, err := repo.GetByEmail(email)
-		if errors.Is(err, repository.ErrRecordNotFound) {
-			return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
-				{Code: api.NotFound, Message: "user not found"},
-			}))
-		}
+		userResponse, err := getUserByEmail(c, email)
 		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
-				{Code: api.ServerError, Message: "couldn't get user"},
-			}))
+			return err
 		}
-
-		userSkills, err := GetUserSkillResponse(user) // TODO
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
-				{Code: api.ServerError, Message: err.Error()},
-			}))
-		}
-
 		return c.Status(fiber.StatusOK).JSON(api.NewSuccessResponse(fiber.Map{
-			"users": []DTO.UserResponse{DTO.FilterUserRecord(user, userSkills)}}, ""))
+			"users": []*DTO.UserResponse{userResponse}}, ""))
 	}
 
 	users, err := repo.GetAll()
@@ -145,7 +114,7 @@ func GetUser(c *fiber.Ctx) error {
 
 	var userRecords = make([]DTO.UserResponse, len(users))
 	for i := 0; i < len(userRecords); i++ {
-		userSkills, err := GetUserSkillResponse(&users[i]) // TODO
+		userSkills, err := GetUserSkillResponse(&users[i])
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
 				{Code: api.ServerError, Message: err.Error()},
@@ -364,4 +333,53 @@ func GetUserSkillResponse(user *models.User) ([]DTO.UserSkillResponse, error) {
 	}
 
 	return userSkillDTO, nil
+}
+
+func getUserByEmail(c *fiber.Ctx, email string) (*DTO.UserResponse, error) {
+	userR := repository.NewUserRepository()
+	user, err := userR.GetByEmail(email)
+	if errors.Is(err, repository.ErrRecordNotFound) {
+		return nil, c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.NotFound, Message: "user not found"},
+		}))
+	}
+	if err != nil {
+		return nil, c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: "couldn't get user"},
+		}))
+	}
+
+	userSkills, err := GetUserSkillResponse(user)
+	if err != nil {
+		return nil, c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: err.Error()},
+		}))
+	}
+	userResponse := DTO.FilterUserRecord(user, userSkills)
+	return &userResponse, nil
+}
+
+func getUserById(c *fiber.Ctx, id string) (*DTO.UserResponse, error) {
+	userR := repository.NewUserRepository()
+	user, err := userR.GetUserById(id)
+	if err != nil {
+		if errors.Is(err, repository.ErrRecordNotFound) {
+			return nil, c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.NotFound, Message: "user not found"},
+			}))
+		} else {
+			return nil, c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.ServerError, Message: "couldn't get user"},
+			}))
+		}
+	}
+
+	userSkills, err := GetUserSkillResponse(user)
+	if err != nil {
+		return nil, c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: err.Error()},
+		}))
+	}
+	userResponse := DTO.FilterUserRecord(user, userSkills)
+	return &userResponse, nil
 }
