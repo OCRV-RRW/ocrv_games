@@ -32,7 +32,7 @@ type UserResponse struct {
 	Name               string              `json:"name"`
 	Email              string              `json:"email"`
 	IsAdmin            bool                `json:"is_admin"`
-	Birthday           time.Time           `json:"birthday"`
+	Birthday           *time.Time          `json:"birthday"`
 	Grade              int                 `json:"grade"`
 	Gender             string              `json:"gender"`
 	ContinuousProgress string              `json:"continuous_progress"`

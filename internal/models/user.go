@@ -14,7 +14,7 @@ type User struct {
 	Skills             []*UserSkill `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
 	VerificationCode   string       `gorm:"type:varchar(100);not null"`
 	Verified           bool         `gorm:"not null"`
-	Birthday           time.Time    `gorm:"type:date"`
+	Birthday           *time.Time   `gorm:"type:date"`
 	Gender             string       `gorm:"type:varchar(100);"`
 	Grade              int          `gorm:"type:integer"`
 	ContinuousProgress int          `gorm:"type:integer"`
