@@ -54,10 +54,10 @@ type ResetPasswordInput struct {
 }
 
 type UpdateUserInput struct {
-	Age     int    `json:"age" validate:"number,lt=100,gt=17"`
-	Gender  string `json:"gender"`
-	Grade   int    `json:"grade" validate:"number,lt=10,gt=-1"`
-	IsAdmin bool   `json:"is_admin"`
+	Birthday *time.Time `json:"birthday"`
+	Gender   string     `json:"gender"`
+	Grade    int        `json:"grade" validate:"number,lt=10,gt=-1"`
+	IsAdmin  bool       `json:"is_admin"`
 }
 
 func FilterUserRecord(user *models.User, userSkills []UserSkillResponse) UserResponse {
