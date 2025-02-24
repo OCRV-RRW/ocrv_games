@@ -200,8 +200,8 @@ definitions:
     type: object
   DTO.UpdateUserInput:
     properties:
-      age:
-        type: integer
+      birthday:
+        type: string
       gender:
         type: string
       grade:

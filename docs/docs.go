@@ -1201,8 +1201,8 @@ const docTemplate = `{
         "DTO.UpdateUserInput": {
             "type": "object",
             "properties": {
-                "age": {
-                    "type": "integer"
+                "birthday": {
+                    "type": "string"
                 },
                 "gender": {
                     "type": "string"
