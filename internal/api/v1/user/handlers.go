@@ -265,8 +265,11 @@ func updateUser(c *fiber.Ctx, user *models.User) error {
 
 	repo := repository.NewUserRepository()
 
-	if birthday, ok := data["birthday"].(*time.Time); ok {
-		user.Birthday = birthday
+	if birthdayRow, ok := data["birthday"].(string); ok {
+		birthday, _ := time.Parse(time.RFC3339, birthdayRow)
+		if birthday.Day() > 1 {
+			user.Birthday = &birthday
+		}
 	}
 	if grade, ok := data["grade"].(float64); ok {
 		user.Grade = int(grade)
