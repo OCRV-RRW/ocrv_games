@@ -275,13 +275,7 @@ func updateUser(c *fiber.Ctx, user *models.User) error {
 		user.Gender = gender
 	}
 	if isAdmin, ok := data["is_admin"].(bool); ok {
-		if user.IsAdmin {
-			user.IsAdmin = isAdmin
-		} else {
-			return c.Status(fiber.StatusForbidden).JSON(api.NewErrorResponse([]*api.Error{
-				{Code: api.Forbidden, Message: "Permission denied."},
-			}))
-		}
+		user.IsAdmin = isAdmin
 	}
 	err = repo.Update(user)
 	if err != nil {
