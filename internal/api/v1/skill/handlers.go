@@ -160,13 +160,24 @@ func UpdateSkill(c *fiber.Ctx) error {
 	name := c.Params("name")
 	r := repository.NewSkillRepository()
 
-	newSkill := &models.Skill{
-		Name:         name,
-		FriendlyName: payload.FriendlyName,
-		Description:  payload.Description,
+	var skill *models.Skill
+	skill, err := r.GetByName(name)
+
+	if err != nil {
+		if errors.Is(err, repository.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(api.NewErrorResponse([]*api.Error{
+				{Code: api.NotFound, Message: err.Error()},
+			}))
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{
+			{Code: api.ServerError, Message: err.Error()},
+		}))
 	}
 
-	err := r.Update(newSkill)
+	skill.FriendlyName = payload.FriendlyName
+	skill.Description = payload.Description
+
+	err = r.Update(skill)
 
 	if err != nil {
 		if errors.Is(err, repository.ErrRecordNotFound) {
