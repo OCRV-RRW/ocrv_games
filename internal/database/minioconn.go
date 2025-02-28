@@ -32,7 +32,7 @@ func ConnectMinio(config *config.Config) {
 	// Initialize minio client object.
 	MinioClient, err = minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
-		Secure: false,
+		Secure: config.MinioSecure,
 	})
 	if err != nil {
 		log.Fatalln(err)
