@@ -63,6 +63,8 @@ services:
     ports:
       - "${MINIO_STORAGE_PORT}:${MINIO_STORAGE_PORT}"
       - "${MINIO_CONSOLE_PORT}:${MINIO_CONSOLE_PORT}"
+    networks:
+      - myNetwork
 
 volumes:
   postgres_volume:

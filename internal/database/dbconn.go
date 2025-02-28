@@ -37,7 +37,6 @@ func InitDB(config *config.Config) {
 	DB.Logger = logger.Default.LogMode(logger.Info)
 
 	log.Println("Running Migrations")
-	//DB.SetupJoinTable(&models.User{}, "Skills", &models.UserSkill{})
 	err = DB.AutoMigrate(&models.User{}, &models.Game{}, &models.Skill{}, &models.UserSkill{})
 
 	if err != nil {
