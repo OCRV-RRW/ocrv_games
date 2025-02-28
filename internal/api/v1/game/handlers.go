@@ -113,12 +113,12 @@ func UploadGamePreview(c *fiber.Ctx) error {
 	defer fileReader.Close()
 	info, err := database.PutGamePreviewer(game, objectName, fileReader)
 	if err != nil {
-		var incorrectParameterMessage string = "Incorrect parameter"
-		if errors.Is(err, database.S3ErrorIncorrectFormat) {
-			incorrectParameterMessage = "Incorrect format. Allowed format is png, jpg."
-		}
+		//var incorrectParameterMessage string = "Incorrect parameter"
+		//if errors.Is(err, database.S3ErrorIncorrectFormat) {
+		//	incorrectParameterMessage = "Incorrect format. Allowed format is png, jpg."
+		//}
 		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse([]*api.Error{
-			{Code: api.IncorrectParameter, Parameter: "preview", Message: incorrectParameterMessage},
+			{Code: api.IncorrectParameter, Parameter: "preview", Message: err.Error()},
 		}))
 	}
 	game.PreviewUrl = info.Location
