@@ -116,16 +116,17 @@ func UploadGamePreview(c *fiber.Ctx) error {
 	defer fileReader.Close()
 	info, err := database.PutGamePreviewer(game, objectName, fileReader)
 	if err != nil {
-		//var incorrectParameterMessage string = "Incorrect parameter"
-		//if errors.Is(err, database.S3ErrorIncorrectFormat) {
-		//	incorrectParameterMessage = "Incorrect format. Allowed format is png, jpg."
-		//}
+		var incorrectParameterMessage string = "Incorrect parameter"
+		if errors.Is(err, database.S3ErrorIncorrectFormat) {
+			incorrectParameterMessage = "Incorrect format. Allowed format is png, jpg."
+		}
 		return c.Status(fiber.StatusBadRequest).JSON(api.NewErrorResponse([]*api.Error{
-			{Code: api.IncorrectParameter, Parameter: "preview", Message: err.Error()},
+			{Code: api.IncorrectParameter, Parameter: "preview", Message: incorrectParameterMessage},
 		}))
 	}
-	loc := strings.Split(info.Location, "/")
-	pathToFile := strings.Join(loc[3:], "/")
+
+	splitLocation := strings.Split(info.Location, "/")
+	pathToFile := strings.Join(splitLocation[3:], "/")
 	game.PreviewUrl = conf.MinioPublicHost + pathToFile
 
 	err = gr.Update(game)

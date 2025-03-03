@@ -11,6 +11,7 @@ import (
 	"log"
 	"mime/multipart"
 	"path/filepath"
+	"strings"
 )
 
 var MinioClient *minio.Client
@@ -53,6 +54,7 @@ func PutObject(objectName string, fileReader multipart.File) (minio.UploadInfo, 
 
 func PutGamePreviewer(game *models.Game, objectName string, fileReader multipart.File) (*minio.UploadInfo, error) {
 	ext := filepath.Ext(objectName)
+	ext = strings.ToLower(ext)
 	if ext != ".png" && ext != ".jpg" {
 		return nil, S3ErrorIncorrectFormat
 	}
