@@ -3,6 +3,7 @@ package game
 import (
 	"Games/internal/DTO"
 	"Games/internal/api"
+	"Games/internal/config"
 	"Games/internal/database"
 	"Games/internal/models"
 	"Games/internal/repository"
@@ -10,6 +11,7 @@ import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"strings"
 )
 
 // CreateGame godoc
@@ -84,6 +86,7 @@ func CreateGame(c *fiber.Ctx) error {
 // @Failure      500		{object}	api.ErrorResponse
 // @Router		 /api/v1/games/upload-preview [patch]
 func UploadGamePreview(c *fiber.Ctx) error {
+	conf, _ := config.LoadConfig("*")
 	gameName := c.Params("name")
 
 	gr := repository.NewGameRepository()
@@ -121,7 +124,10 @@ func UploadGamePreview(c *fiber.Ctx) error {
 			{Code: api.IncorrectParameter, Parameter: "preview", Message: err.Error()},
 		}))
 	}
-	game.PreviewUrl = info.Location
+	loc := strings.Split(info.Location, "/")
+	pathToFile := strings.Join(loc[3:], "/")
+	game.PreviewUrl = conf.MinioPublicHost + pathToFile
+
 	err = gr.Update(game)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(api.NewErrorResponse([]*api.Error{

@@ -19,11 +19,12 @@ type Config struct {
 	DBPort         string `mapstructure:"POSTGRES_PORT"`
 
 	//MINIO
-	MinioSecure    bool   `mapstructure:"MINIO_SECURE"`
-	MinioHost      string `mapstructure:"MINIO_HOST"`
-	MinioAccessKey string `mapstructure:"MINIO_ACCESS_KEY"`
-	MinioSecretKey string `mapstructure:"MINIO_SECRET_KEY"`
-	AppBucket      string `mapstructure:"MINIO_BUCKET"`
+	MinioPublicHost string `mapstructure:"MINIO_PUBLIC_HOST"`
+	MinioSecure     bool   `mapstructure:"MINIO_SECURE"`
+	MinioHost       string `mapstructure:"MINIO_HOST"`
+	MinioAccessKey  string `mapstructure:"MINIO_ACCESS_KEY"`
+	MinioSecretKey  string `mapstructure:"MINIO_SECRET_KEY"`
+	AppBucket       string `mapstructure:"MINIO_BUCKET"`
 
 	//Redis
 	RedisPort string `mapstructure:"REDIS_PORT"`

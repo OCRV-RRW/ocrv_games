@@ -51,7 +51,6 @@ services:
       - .env
     restart: always
     volumes:
-      - ~/minio/certs:/root/.minio/certs  # Mounting the certs directory
       - minio-storage:/data
       - minio-config:/root/.minio
     command: server /data --console-address ":${MINIO_CONSOLE_PORT}" --address=":${MINIO_STORAGE_PORT}"
