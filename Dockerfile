@@ -1,11 +1,38 @@
-FROM golang:alpine AS builder
+#FROM golang:alpine AS builder
+#
+#WORKDIR /build
+#
+#ADD go.mod .
+#
+#COPY . .
+#
+#RUN go build -o app main.
+#
+#FROM alpine
+#
+#CMD ["/build/app"]
 
-WORKDIR /build
+# STEP-1
+# build app from source
 
-ADD go.mod .
+FROM golang:1.24.1-alpine3.21 AS builder
 
-COPY . .
+WORKDIR /mysource
 
-RUN go build -o app main.go
+COPY ./vendor ./vendor
+COPY ./go.mod ./go.sum ./main.go ./.env ./
+COPY ./internal ./internal
+COPY ./docs ./docs
 
-CMD ["/build/app"]
+RUN go build -o app ./main.go
+
+# STEP-2
+# make container
+
+FROM alpine:3.21
+
+WORKDIR /myapp
+
+COPY --from=builder /mysource ./
+
+CMD [ "/myapp/app" ]
